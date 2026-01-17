@@ -1,0 +1,183 @@
+/* Components: карточки, кнопки, бейджи, алерты и формы */
+
+/* Кнопки действий на карточке товара */
+.product-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 3;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.product-card:hover .product-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.product-favorite {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-elevated);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    padding: 0;
+    box-shadow: var(--shadow-soft);
+}
+
+.product-favorite:hover {
+    background: var(--pink-bright);
+    border-color: var(--pink-bright);
+    transform: scale(1.1);
+}
+
+.product-favorite svg {
+    color: var(--text-color);
+    width: 18px;
+    height: 18px;
+}
+
+.product-favorite:hover svg,
+.product-favorite.active svg {
+    color: white;
+}
+
+.product-favorite.active svg {
+    fill: white;
+}
+
+.product-favorite.active {
+    background: var(--pink-bright);
+    border-color: var(--pink-bright);
+    box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3);
+}
+
+/* Кнопка добавления в корзину */
+.product-cart-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-elevated);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    color: var(--text-light);
+    padding: 0;
+    box-shadow: var(--shadow-soft);
+}
+
+.product-cart-btn:hover {
+    border-color: var(--accent-color);
+    background: var(--accent-soft);
+    color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.product-cart-btn.in-cart {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.product-cart-btn.in-cart:hover {
+    background: var(--pink-medium);
+    border-color: var(--pink-medium);
+    transform: scale(1.1);
+}
+
+.product-cart-btn svg {
+    width: 18px;
+    height: 18px;
+    transition: var(--transition);
+}
+
+/* Toast уведомления */
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    min-width: 280px;
+    max-width: 400px;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    pointer-events: none;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.toast-notification.success {
+    border-left: 4px solid #4CAF50;
+}
+
+.toast-notification.error {
+    border-left: 4px solid #F44336;
+}
+
+.toast-notification-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.toast-notification.success .toast-notification-icon {
+    background: #E8F5E9;
+    color: #4CAF50;
+}
+
+.toast-notification.error .toast-notification-icon {
+    background: #FFEBEE;
+    color: #F44336;
+}
+
+.toast-notification-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.toast-notification-content {
+    flex: 1;
+}
+
+.toast-notification-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-color);
+    margin: 0 0 2px 0;
+}
+
+.toast-notification-message {
+    font-size: 13px;
+    color: var(--text-light);
+    margin: 0;
+}
