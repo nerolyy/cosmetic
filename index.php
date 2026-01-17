@@ -51,12 +51,11 @@ include 'includes/header.php';
             <?php 
             for($i = 0; $i < 60; $i++): 
                 $left = rand(0, 100);
-                $delay = rand(0, 20);
                 $duration = 15 + rand(0, 15);
                 $size = 30 + rand(0, 100);
                 $rotation = rand(0, 360);
             ?>
-                <span class="hero-particle" style="left: <?php echo $left; ?>%; animation-delay: <?php echo $delay; ?>s; animation-duration: <?php echo $duration; ?>s; font-size: <?php echo $size; ?>px; --rotation: <?php echo $rotation; ?>deg;">%</span>
+                <span class="hero-particle" style="left: <?php echo $left; ?>%; animation-duration: <?php echo $duration; ?>s; font-size: <?php echo $size; ?>px; --rotation: <?php echo $rotation; ?>deg;">%</span>
             <?php endfor; ?>
         </div>
         <div class="hero-gradient-overlay"></div>
@@ -180,13 +179,13 @@ include 'includes/header.php';
         <div class="products-grid">
             <?php if (!empty($hits)): ?>
                 <?php foreach ($hits as $product): ?>
-                    <div class="product-card">
+                    <a href="product.php?id=<?php echo $product['id']; ?>" class="product-card" data-product-id="<?php echo $product['id']; ?>">
                         <?php if ($product['discount'] > 0): ?>
                             <span class="product-badge badge-discount"><?php echo $product['discount']; ?>%</span>
                         <?php else: ?>
                             <span class="product-badge badge-hit">HIT</span>
                         <?php endif; ?>
-                        <div class="product-actions">
+                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
                             <?php if (isLoggedIn()): ?>
                                 <button class="product-favorite <?php echo in_array($product['id'], $favorite_product_ids) ? 'active' : ''; ?>" 
                                         data-product-id="<?php echo $product['id']; ?>" 
@@ -217,6 +216,14 @@ include 'includes/header.php';
                             <p class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Косметика'); ?></p>
                             <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="product-brand"><?php echo htmlspecialchars($product['brand_name'] ?? ''); ?></p>
+                            <?php if (!empty($product['description'])): ?>
+                                <p class="product-description-short"><?php echo htmlspecialchars(mb_substr($product['description'], 0, 80)) . (mb_strlen($product['description']) > 80 ? '...' : ''); ?></p>
+                            <?php endif; ?>
+                            <div class="product-meta">
+                                <span class="product-stock <?php echo $product['stock'] > 0 ? 'in-stock' : 'out-of-stock'; ?>">
+                                    <?php echo $product['stock'] > 0 ? 'В наличии (' . $product['stock'] . ')' : 'Нет в наличии'; ?>
+                                </span>
+                            </div>
                             <p class="product-price">
                                 <?php if ($product['old_price']): ?>
                                     <span class="price-old"><?php echo number_format($product['old_price'], 0, ',', ' '); ?> Р</span>
@@ -227,7 +234,7 @@ include 'includes/header.php';
                                 </span>
                             </p>
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p class="no-products">Товары пока не добавлены</p>
@@ -263,13 +270,13 @@ include 'includes/header.php';
         <div class="products-grid">
             <?php if (!empty($new_products)): ?>
                 <?php foreach ($new_products as $product): ?>
-                    <div class="product-card">
+                    <a href="product.php?id=<?php echo $product['id']; ?>" class="product-card" data-product-id="<?php echo $product['id']; ?>">
                         <?php if ($product['discount'] > 0): ?>
                             <span class="product-badge badge-discount"><?php echo $product['discount']; ?>%</span>
                         <?php else: ?>
                             <span class="product-badge badge-new">NEW</span>
                         <?php endif; ?>
-                        <div class="product-actions">
+                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
                             <?php if (isLoggedIn()): ?>
                                 <button class="product-favorite <?php echo in_array($product['id'], $favorite_product_ids) ? 'active' : ''; ?>" 
                                         data-product-id="<?php echo $product['id']; ?>" 
@@ -300,6 +307,14 @@ include 'includes/header.php';
                             <p class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Косметика'); ?></p>
                             <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="product-brand"><?php echo htmlspecialchars($product['brand_name'] ?? ''); ?></p>
+                            <?php if (!empty($product['description'])): ?>
+                                <p class="product-description-short"><?php echo htmlspecialchars(mb_substr($product['description'], 0, 80)) . (mb_strlen($product['description']) > 80 ? '...' : ''); ?></p>
+                            <?php endif; ?>
+                            <div class="product-meta">
+                                <span class="product-stock <?php echo $product['stock'] > 0 ? 'in-stock' : 'out-of-stock'; ?>">
+                                    <?php echo $product['stock'] > 0 ? 'В наличии (' . $product['stock'] . ')' : 'Нет в наличии'; ?>
+                                </span>
+                            </div>
                             <p class="product-price">
                                 <?php if ($product['old_price']): ?>
                                     <span class="price-old"><?php echo number_format($product['old_price'], 0, ',', ' '); ?> Р</span>

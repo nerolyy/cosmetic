@@ -72,6 +72,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     cartButton.classList.add('in-cart');
                     cartButton.setAttribute('aria-label', 'В корзине');
+                    
+                    // Обновляем текст кнопки, если она содержит span с текстом
+                    const buttonText = cartButton.querySelector('span');
+                    if (buttonText) {
+                        buttonText.textContent = 'В корзине';
+                    }
+                    
                     // Визуальная обратная связь
                     cartButton.style.transform = 'scale(1.2)';
                     setTimeout(() => {

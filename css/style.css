@@ -106,15 +106,15 @@ img {
 @keyframes float-particle {
     0% {
         transform: translate3d(0, 100vh, 0) scale(0.8) rotate(0deg);
-        opacity: 0;
+        opacity: 0.2;
     }
-    10% {
+    5% {
         opacity: 0.3;
     }
     50% {
         opacity: 0.5;
     }
-    90% {
+    95% {
         opacity: 0.3;
     }
     100% {
@@ -300,7 +300,7 @@ img {
     justify-content: center !important;
     flex-wrap: wrap !important;
     margin-bottom: 60px !important;
-    margin-top: 20px !important;
+    margin-top: 40px !important;
 }
 
 .btn-hero {
@@ -382,15 +382,19 @@ img {
 
 .hero-stats {
     display: flex;
-    gap: 60px;
+    gap: 100px;
     justify-content: center;
     flex-wrap: wrap;
     padding-top: 40px;
+    padding-bottom: 60px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 40px;
 }
 
 .stat-item {
     text-align: center;
+    min-width: 120px;
+    padding: 0 20px;
 }
 
 .stat-number {
@@ -771,6 +775,9 @@ img {
     opacity: 0;
     transform: translateY(30px) scale(0.95);
     animation: fade-in-card 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 .product-card:nth-child(1) { animation-delay: 0.1s; }
@@ -799,10 +806,16 @@ img {
     border-color: rgba(102, 126, 234, 0.4);
     transform: translateY(-12px) scale(1.02);
     box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+    text-decoration: none;
+    color: inherit;
 }
 
 .product-card:hover::before {
     opacity: 1;
+}
+
+.product-card:visited {
+    color: inherit;
 }
 
 .product-badge {
@@ -925,6 +938,50 @@ img {
     font-size: 14px;
     color: var(--text-light);
     margin-bottom: 10px;
+}
+
+.product-description-short {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-meta {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.product-stock {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.product-stock.in-stock {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.product-stock.out-of-stock {
+    background: #FFEBEE;
+    color: #C62828;
+}
+
+.product-stock svg {
+    width: 12px;
+    height: 12px;
 }
 
 .product-price {
@@ -1575,8 +1632,12 @@ img {
     margin-bottom: 30px;
 }
 
+.admin-content .admin-header h1,
 .admin-header h1 {
-    font-size: 32px;
+    font-size: 32px !important;
+    color: #212121 !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
 }
 
 .admin-stats {
@@ -1594,24 +1655,39 @@ img {
     box-shadow: var(--shadow);
 }
 
+.admin-stats .stat-card h3,
 .stat-card h3 {
-    font-size: 16px;
-    color: var(--text-light);
-    margin-bottom: 10px;
-    text-transform: uppercase;
+    font-size: 16px !important;
+    color: #424242 !important;
+    margin-bottom: 10px !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
 }
 
-.stat-number {
-    font-size: 48px;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 15px;
+.admin-stats .stat-card .stat-number,
+.admin-stats .stat-number,
+.stat-card .stat-number,
+.admin-content .stat-number {
+    font-size: 48px !important;
+    font-weight: 700 !important;
+    color: #1976D2 !important;
+    margin-bottom: 15px !important;
+    opacity: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #1976D2 !important;
+    background-clip: unset !important;
 }
 
 .stat-link {
-    color: var(--primary-color);
+    color: #1976D2 !important;
     font-weight: 600;
     transition: var(--transition);
+    display: inline-block;
+    margin-top: 10px;
 }
 
 .stat-link:hover {
@@ -1771,10 +1847,14 @@ img {
 }
 
 /* Дополнительные стили для админ-панели */
-.stat-subinfo {
-    font-size: 13px;
-    color: var(--text-light);
-    margin-top: 4px;
+.admin-stats .stat-card .stat-subinfo,
+.stat-card .stat-subinfo {
+    font-size: 13px !important;
+    color: #616161 !important;
+    margin-top: 4px !important;
+    margin-bottom: 8px !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
 }
 
 .badge {
@@ -2051,8 +2131,17 @@ img {
         padding-top: 30px;
     }
 
-    .stat-number {
-        font-size: 28px;
+    .admin-stats .stat-card .stat-number,
+    .admin-stats .stat-number,
+    .stat-card .stat-number,
+    .admin-content .stat-number {
+        font-size: 28px !important;
+        color: #1976D2 !important;
+        opacity: 1 !important;
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: #1976D2 !important;
+        background-clip: unset !important;
     }
 
     .features-section {

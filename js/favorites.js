@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                             this.setAttribute('aria-label', 'В избранное');
                             
+                            // Обновляем текст кнопки на странице товара, если есть
+                            const buttonText = this.querySelector('span');
+                            if (buttonText && this.classList.contains('btn-secondary')) {
+                                buttonText.textContent = 'В избранное';
+                            }
+                            
                             // Если удаляем из избранного в профиле, удаляем карточку товара
                             const productCard = this.closest('.product-card');
                             const productsGrid = productCard ? productCard.closest('.products-grid') : null;
@@ -56,6 +62,12 @@ document.addEventListener('DOMContentLoaded', function () {
                                 svg.setAttribute('fill', 'currentColor');
                             }
                             this.setAttribute('aria-label', 'Удалить из избранного');
+                            
+                            // Обновляем текст кнопки на странице товара, если есть
+                            const buttonText = this.querySelector('span');
+                            if (buttonText && this.classList.contains('btn-secondary')) {
+                                buttonText.textContent = 'В избранном';
+                            }
                         }
                     } else if (data.message && data.message.includes('авторизац')) {
                         window.location.href = 'login.php';
