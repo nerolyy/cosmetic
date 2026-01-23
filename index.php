@@ -44,67 +44,144 @@ $page_title = 'Главная';
 include 'includes/header.php';
 ?>
 
-<!-- Главный промо-баннер -->
-<section class="hero-section">
-    <div class="hero-background">
-        <div class="hero-particles">
-            <?php 
-            for($i = 0; $i < 60; $i++): 
-                $left = rand(0, 100);
-                $duration = 15 + rand(0, 15);
-                $size = 30 + rand(0, 100);
-                $rotation = rand(0, 360);
-            ?>
-                <span class="hero-particle" style="left: <?php echo $left; ?>%; animation-duration: <?php echo $duration; ?>s; font-size: <?php echo $size; ?>px; --rotation: <?php echo $rotation; ?>deg;">%</span>
-            <?php endfor; ?>
-        </div>
-        <div class="hero-gradient-overlay"></div>
-        <div class="hero-shapes">
-            <div class="shape shape-1"></div>
-            <div class="shape shape-2"></div>
-            <div class="shape shape-3"></div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="hero-content">
-            <h1 class="hero-title fade-in-up" data-delay="0.2">
-                <span class="title-line-1">скидки до</span>
-                <span class="title-line-2">-50%</span>
-            </h1>
-            <p class="hero-subtitle fade-in-up" data-delay="0.3">любимое, новое и нужное</p>
-            <p class="hero-description fade-in-up" data-delay="0.4">Откройте для себя мир премиальной косметики с эксклюзивными предложениями</p>
-            <div class="hero-actions fade-in-up" data-delay="0.5">
-                <a href="promotions.php" class="btn btn-hero">
-                    <span>ПЕРЕЙТИ К АКЦИИ</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                    </svg>
-                </a>
-                <a href="catalog.php" class="btn btn-hero-secondary">
-                    <span>Каталог товаров</span>
-                </a>
+<!-- Объединенный слайдер: скидки и промокоды -->
+<section class="unified-slider-section">
+    <div class="unified-slider-container">
+        <div class="unified-slider-wrapper">
+            <!-- Слайд 1: Скидки до -50% (Hero) -->
+            <div class="unified-slide unified-slide-active" data-slide="0">
+                <div class="hero-background">
+                    <div class="hero-particles">
+                        <?php 
+                        for($i = 0; $i < 60; $i++): 
+                            $left = rand(0, 100);
+                            $delay = rand(0, 20);
+                            $duration = 15 + rand(0, 15);
+                            $size = 30 + rand(0, 100);
+                            $rotation = rand(0, 360);
+                        ?>
+                            <span class="hero-particle" style="left: <?php echo $left; ?>%; animation-delay: <?php echo $delay; ?>s; animation-duration: <?php echo $duration; ?>s; font-size: <?php echo $size; ?>px; --rotation: <?php echo $rotation; ?>deg;">%</span>
+                        <?php endfor; ?>
+                    </div>
+                    <div class="hero-gradient-overlay"></div>
+                    <div class="hero-shapes">
+                        <div class="shape shape-1"></div>
+                        <div class="shape shape-2"></div>
+                        <div class="shape shape-3"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="hero-content">
+                        <h1 class="hero-title fade-in-up" data-delay="0.2">
+                            <span class="title-line-1">скидки до</span>
+                            <span class="title-line-2">-50%</span>
+                        </h1>
+                        <p class="hero-subtitle fade-in-up" data-delay="0.3">любимое, новое и нужное</p>
+                        <p class="hero-description fade-in-up" data-delay="0.4">Откройте для себя мир премиальной косметики с эксклюзивными предложениями</p>
+                        <div class="hero-actions fade-in-up" data-delay="0.5">
+                            <a href="promotions.php" class="btn btn-hero">
+                                <span>ПЕРЕЙТИ К АКЦИИ</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                            <a href="catalog.php" class="btn btn-hero-secondary">
+                                <span>Каталог товаров</span>
+                            </a>
+                        </div>
+                        <div class="hero-stats fade-in-up" data-delay="0.6">
+                            <div class="stat-item">
+                                <div class="stat-number">1000+</div>
+                                <div class="stat-label">Товаров</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">50+</div>
+                                <div class="stat-label">Брендов</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label">Поддержка</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="hero-stats fade-in-up" data-delay="0.6">
-                <div class="stat-item">
-                    <div class="stat-number">1000+</div>
-                    <div class="stat-label">Товаров</div>
+            
+            <!-- Слайд 2: Промокод на первый заказ -->
+            <div class="unified-slide" data-slide="1">
+                <div class="promo-slide-background">
+                    <div class="promo-shapes">
+                        <div class="promo-shape promo-shape-1"></div>
+                        <div class="promo-shape promo-shape-2"></div>
+                        <div class="promo-shape promo-shape-3"></div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">50+</div>
-                    <div class="stat-label">Брендов</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Поддержка</div>
+                <div class="container">
+                    <div class="promo-slide-content">
+                        <div class="promo-main-content">
+                            <h2 class="promo-title">Промокод на первый заказ</h2>
+                            <div class="promo-code-wrapper">
+                                <div class="promo-code-label">Используйте промокод:</div>
+                                <div class="promo-code" id="promo-code">FIRST10</div>
+                                <div class="promo-code-description">Скидка 10% на первый заказ</div>
+                            </div>
+                            <a href="catalog.php" class="btn-promo-catalog">
+                                <span>ИССЛЕДУЙТЕ КАТАЛОГ</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+            <!-- Слайд 3: Новинки -->
+            <div class="unified-slide" data-slide="2">
+                <div class="promo-slide-background">
+                    <div class="promo-shapes">
+                        <div class="promo-shape promo-shape-1"></div>
+                        <div class="promo-shape promo-shape-2"></div>
+                        <div class="promo-shape promo-shape-3"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="promo-slide-content">
+                        <div class="promo-text-top">
+                            <span class="promo-label">НОВИНКИ</span>
+                            <span class="promo-label-secondary">2024</span>
+                        </div>
+                        <div class="promo-main-content">
+                            <h2 class="promo-title">Эксклюзивные новинки</h2>
+                            <div class="promo-code-wrapper">
+                                <div class="promo-code-label">Откройте для себя</div>
+                                <div class="promo-code-description">Самые свежие коллекции от ведущих брендов</div>
+                            </div>
+                            <a href="catalog.php?filter=new" class="btn-promo-catalog">
+                                <span>СМОТРЕТЬ НОВИНКИ</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
-    </div>
-    <div class="hero-scroll-indicator">
-        <div class="scroll-mouse">
-            <div class="scroll-wheel"></div>
+        
+        <!-- Индикаторы слайдов -->
+        <div class="unified-slider-indicators">
+            <button type="button" class="unified-indicator unified-indicator-active" data-slide="0" aria-label="Слайд 1"></button>
+            <button type="button" class="unified-indicator" data-slide="1" aria-label="Слайд 2"></button>
+            <button type="button" class="unified-indicator" data-slide="2" aria-label="Слайд 3"></button>
         </div>
-        <span>Исследуйте каталог</span>
+        
+        <!-- Стрелки навигации -->
+        <button type="button" class="unified-slider-arrow unified-slider-prev" aria-label="Предыдущий слайд">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        <button type="button" class="unified-slider-arrow unified-slider-next" aria-label="Следующий слайд">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"></path>
+            </svg>
+        </button>
     </div>
 </section>
 
@@ -179,13 +256,13 @@ include 'includes/header.php';
         <div class="products-grid">
             <?php if (!empty($hits)): ?>
                 <?php foreach ($hits as $product): ?>
-                    <a href="product.php?id=<?php echo $product['id']; ?>" class="product-card" data-product-id="<?php echo $product['id']; ?>">
+                    <div class="product-card">
                         <?php if ($product['discount'] > 0): ?>
                             <span class="product-badge badge-discount"><?php echo $product['discount']; ?>%</span>
                         <?php else: ?>
                             <span class="product-badge badge-hit">HIT</span>
                         <?php endif; ?>
-                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                        <div class="product-actions">
                             <?php if (isLoggedIn()): ?>
                                 <button class="product-favorite <?php echo in_array($product['id'], $favorite_product_ids) ? 'active' : ''; ?>" 
                                         data-product-id="<?php echo $product['id']; ?>" 
@@ -216,14 +293,6 @@ include 'includes/header.php';
                             <p class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Косметика'); ?></p>
                             <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="product-brand"><?php echo htmlspecialchars($product['brand_name'] ?? ''); ?></p>
-                            <?php if (!empty($product['description'])): ?>
-                                <p class="product-description-short"><?php echo htmlspecialchars(mb_substr($product['description'], 0, 80)) . (mb_strlen($product['description']) > 80 ? '...' : ''); ?></p>
-                            <?php endif; ?>
-                            <div class="product-meta">
-                                <span class="product-stock <?php echo $product['stock'] > 0 ? 'in-stock' : 'out-of-stock'; ?>">
-                                    <?php echo $product['stock'] > 0 ? 'В наличии (' . $product['stock'] . ')' : 'Нет в наличии'; ?>
-                                </span>
-                            </div>
                             <p class="product-price">
                                 <?php if ($product['old_price']): ?>
                                     <span class="price-old"><?php echo number_format($product['old_price'], 0, ',', ' '); ?> Р</span>
@@ -234,7 +303,7 @@ include 'includes/header.php';
                                 </span>
                             </p>
                         </div>
-                    </a>
+                    </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p class="no-products">Товары пока не добавлены</p>
@@ -270,13 +339,13 @@ include 'includes/header.php';
         <div class="products-grid">
             <?php if (!empty($new_products)): ?>
                 <?php foreach ($new_products as $product): ?>
-                    <a href="product.php?id=<?php echo $product['id']; ?>" class="product-card" data-product-id="<?php echo $product['id']; ?>">
+                    <div class="product-card">
                         <?php if ($product['discount'] > 0): ?>
                             <span class="product-badge badge-discount"><?php echo $product['discount']; ?>%</span>
                         <?php else: ?>
                             <span class="product-badge badge-new">NEW</span>
                         <?php endif; ?>
-                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                        <div class="product-actions">
                             <?php if (isLoggedIn()): ?>
                                 <button class="product-favorite <?php echo in_array($product['id'], $favorite_product_ids) ? 'active' : ''; ?>" 
                                         data-product-id="<?php echo $product['id']; ?>" 
@@ -307,14 +376,6 @@ include 'includes/header.php';
                             <p class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Косметика'); ?></p>
                             <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="product-brand"><?php echo htmlspecialchars($product['brand_name'] ?? ''); ?></p>
-                            <?php if (!empty($product['description'])): ?>
-                                <p class="product-description-short"><?php echo htmlspecialchars(mb_substr($product['description'], 0, 80)) . (mb_strlen($product['description']) > 80 ? '...' : ''); ?></p>
-                            <?php endif; ?>
-                            <div class="product-meta">
-                                <span class="product-stock <?php echo $product['stock'] > 0 ? 'in-stock' : 'out-of-stock'; ?>">
-                                    <?php echo $product['stock'] > 0 ? 'В наличии (' . $product['stock'] . ')' : 'Нет в наличии'; ?>
-                                </span>
-                            </div>
                             <p class="product-price">
                                 <?php if ($product['old_price']): ?>
                                     <span class="price-old"><?php echo number_format($product['old_price'], 0, ',', ' '); ?> Р</span>

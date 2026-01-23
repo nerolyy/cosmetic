@@ -38,6 +38,198 @@ function showToast(title, message, type = 'success') {
     }, 3000);
 }
 
+// Глобальные переменные для промокода
+let appliedPromoCode = null;
+let promoDiscount = 0;
+
+// Функция форматирования цены
+function formatPrice(price) {
+    return Math.round(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+// Функция обновления общей суммы корзины (объединенная с учетом промокода)
+function updateCartTotal() {
+    const cartItems = document.querySelectorAll('.cart-item-summary');
+    let baseTotal = 0;
+    
+    cartItems.forEach(item => {
+        const price = parseFloat(item.dataset.price || 0);
+        const quantity = parseInt(item.dataset.quantity || 0);
+        baseTotal += price * quantity;
+    });
+    
+    // Обновляем отображение суммы
+    const totalElement = document.getElementById('cart-total');
+    const totalFinalElement = document.getElementById('cart-total-final');
+    const promoDiscountRow = document.getElementById('promo-discount-row');
+    const promoDiscountAmount = document.getElementById('promo-discount-amount');
+    
+    const formattedBaseTotal = formatPrice(baseTotal);
+    
+    if (totalElement) {
+        totalElement.textContent = formattedBaseTotal + ' Р';
+    }
+    
+    // Применяем скидку промокода
+    const finalTotal = Math.max(0, baseTotal - promoDiscount);
+    const formattedFinalTotal = formatPrice(finalTotal);
+    
+    // Показываем/скрываем строку со скидкой
+    if (promoDiscount > 0 && promoDiscountRow) {
+        promoDiscountRow.style.display = 'flex';
+        if (promoDiscountAmount) {
+            promoDiscountAmount.textContent = '-' + formatPrice(promoDiscount) + ' Р';
+        }
+    } else if (promoDiscountRow) {
+        promoDiscountRow.style.display = 'none';
+    }
+    
+    if (totalFinalElement) {
+        totalFinalElement.textContent = formattedFinalTotal + ' Р';
+    }
+}
+
+// Функция применения промокода
+function applyPromoCode() {
+    const promoInput = document.getElementById('promo-code-input');
+    const promoMessage = document.getElementById('promo-code-message');
+    const promoInfo = document.getElementById('promo-code-info');
+    const applyBtn = document.getElementById('apply-promo-btn');
+    
+    if (!promoInput || !promoMessage) return;
+    
+    const code = promoInput.value.trim().toUpperCase();
+    if (!code) {
+        promoMessage.textContent = 'Введите промокод';
+        promoMessage.style.color = '#C62828';
+        return;
+    }
+    
+    // Получаем актуальную сумму заказа из элементов корзины
+    let cartTotal = 0;
+    document.querySelectorAll('.cart-item-summary').forEach(item => {
+        const price = parseFloat(item.dataset.price || 0);
+        const quantity = parseInt(item.dataset.quantity || 0);
+        cartTotal += price * quantity;
+    });
+    
+    if (cartTotal <= 0) {
+        promoMessage.textContent = 'Корзина пуста';
+        promoMessage.style.color = '#C62828';
+        return;
+    }
+    
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Проверка...';
+    promoMessage.textContent = '';
+    promoMessage.style.color = '';
+    
+    fetch('check_promo_code.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            code: code,
+            order_total: cartTotal
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP error! status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Применить';
+        
+        if (!data || typeof data !== 'object') {
+            throw new Error('Invalid response format');
+        }
+        
+        if (data.success) {
+            appliedPromoCode = {
+                id: data.promo_id,
+                code: data.promo_code,
+                description: data.description,
+                discount: data.discount
+            };
+            promoDiscount = data.discount;
+            
+            // Показываем информацию о промокоде
+            document.getElementById('promo-code-name').textContent = data.promo_code;
+            document.getElementById('promo-discount').textContent = '-' + formatPrice(data.discount) + ' Р';
+            promoInfo.style.display = 'block';
+            promoMessage.textContent = 'Промокод успешно применен!';
+            promoMessage.style.color = '#2E7D32';
+            promoInput.style.borderColor = '#2E7D32';
+            
+            // Обновляем итоговую сумму
+            updateCartTotal();
+            
+            showToast('Промокод применен', `Скидка ${formatPrice(data.discount)} Р`);
+        } else {
+            promoMessage.textContent = data.message || 'Ошибка при применении промокода';
+            promoMessage.style.color = '#C62828';
+            promoInput.style.borderColor = '#C62828';
+            appliedPromoCode = null;
+            promoDiscount = 0;
+            promoInfo.style.display = 'none';
+            updateCartTotal();
+        }
+    })
+    .catch(error => {
+        console.error('Promo code check error:', error);
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Применить';
+        
+        let errorMessage = 'Ошибка при проверке промокода. ';
+        if (error.message && error.message.includes('HTTP')) {
+            errorMessage += 'Проверьте подключение к интернету.';
+        } else if (error.message && error.message.includes('JSON')) {
+            errorMessage += 'Неверный формат ответа от сервера.';
+        } else {
+            errorMessage += 'Попробуйте позже или обратитесь в поддержку.';
+        }
+        
+        promoMessage.textContent = errorMessage;
+        promoMessage.style.color = '#C62828';
+        promoInput.style.borderColor = '#C62828';
+        appliedPromoCode = null;
+        promoDiscount = 0;
+        const promoInfo = document.getElementById('promo-code-info');
+        if (promoInfo) promoInfo.style.display = 'none';
+        updateCartTotal();
+    });
+}
+
+// Функция удаления промокода
+function removePromoCode() {
+    appliedPromoCode = null;
+    promoDiscount = 0;
+    
+    const promoInput = document.getElementById('promo-code-input');
+    const promoMessage = document.getElementById('promo-code-message');
+    const promoInfo = document.getElementById('promo-code-info');
+    
+    if (promoInput) promoInput.value = '';
+    if (promoMessage) {
+        promoMessage.textContent = '';
+        promoMessage.style.color = '';
+    }
+    if (promoInfo) promoInfo.style.display = 'none';
+    if (promoInput) promoInput.style.borderColor = '';
+    
+    updateCartTotal();
+    showToast('Промокод удален', 'Промокод был удален из заказа');
+}
+
+// Функция форматирования цены
+function formatPrice(price) {
+    return Math.round(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Cart.js loaded');
     
@@ -72,13 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     cartButton.classList.add('in-cart');
                     cartButton.setAttribute('aria-label', 'В корзине');
-                    
-                    // Обновляем текст кнопки, если она содержит span с текстом
-                    const buttonText = cartButton.querySelector('span');
-                    if (buttonText) {
-                        buttonText.textContent = 'В корзине';
-                    }
-                    
                     // Визуальная обратная связь
                     cartButton.style.transform = 'scale(1.2)';
                     setTimeout(() => {
@@ -445,30 +630,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }, true);
-    
-    // Функция обновления общей суммы корзины
-    function updateCartTotal() {
-        const cartItems = document.querySelectorAll('.cart-item-summary');
-        let total = 0;
-        
-        cartItems.forEach(item => {
-            const price = parseFloat(item.dataset.price || 0);
-            const quantity = parseInt(item.dataset.quantity || 0);
-            total += price * quantity;
-        });
-        
-        // Обновляем отображение суммы
-        const totalElement = document.getElementById('cart-total');
-        const totalFinalElement = document.getElementById('cart-total-final');
-        const formattedTotal = Math.round(total).toLocaleString('ru-RU');
-        
-        if (totalElement) {
-            totalElement.textContent = formattedTotal + ' Р';
-        }
-        if (totalFinalElement) {
-            totalFinalElement.textContent = formattedTotal + ' Р';
-        }
-    }
 
     // Инициализация обработчиков доставки
     if (deliveryRadios.length > 0) {
@@ -649,6 +810,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 formData.append('address', address);
             } else if (deliveryMethod === 'pickup') {
                 formData.append('shop_id', shopId);
+            }
+            
+            // Добавляем промокод, если применен
+            if (appliedPromoCode && appliedPromoCode.id) {
+                formData.append('promo_code_id', appliedPromoCode.id);
             }
             
             fetch('create_order.php', {

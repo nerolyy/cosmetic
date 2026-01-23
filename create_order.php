@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $delivery_method = $_POST['delivery_method'] ?? '';
     $address = trim($_POST['address'] ?? '');
     $shop_id = !empty($_POST['shop_id']) ? (int)$_POST['shop_id'] : null;
+    $promo_code_id = !empty($_POST['promo_code_id']) ? (int)$_POST['promo_code_id'] : null;
     
     $errors = [];
     
@@ -96,10 +97,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Вычисляем общую стоимость
-        $total = 0;
+        $subtotal = 0;
         foreach ($cart_items as $item) {
-            $total += $item['price'] * $item['quantity'];
+            $subtotal += $item['price'] * $item['quantity'];
         }
+        
+        // Применяем промокод, если указан
+        $promo_discount = 0;
+        if ($promo_code_id) {
+            $stmt_promo = $pdo->prepare("
+                SELECT * FROM promo_codes 
+                WHERE id = ? AND is_active = 1
+            ");
+            $stmt_promo->execute([$promo_code_id]);
+            $promo = $stmt_promo->fetch();
+            
+            if ($promo) {
+                // Проверяем даты действия
+                $now = new DateTime();
+                $valid_from = new DateTime($promo['valid_from']);
+                $valid_until = $promo['valid_until'] ? new DateTime($promo['valid_until']) : null;
+                
+                $is_valid = true;
+                if ($now < $valid_from) $is_valid = false;
+                if ($valid_until && $now > $valid_until) $is_valid = false;
+                
+                // Проверяем минимальную сумму
+                if ($subtotal < $promo['min_order_amount']) $is_valid = false;
+                
+                // Проверяем максимальное количество использований
+                if ($promo['max_uses'] !== null && $promo['current_uses'] >= $promo['max_uses']) $is_valid = false;
+                
+                if ($is_valid) {
+                    // Вычисляем скидку
+                    if ($promo['discount_type'] === 'percentage') {
+                        $promo_discount = ($subtotal * $promo['discount_value']) / 100;
+                        if ($promo['max_discount'] !== null && $promo_discount > $promo['max_discount']) {
+                            $promo_discount = $promo['max_discount'];
+                        }
+                    } else {
+                        $promo_discount = $promo['discount_value'];
+                        if ($promo_discount > $subtotal) {
+                            $promo_discount = $subtotal;
+                        }
+                    }
+                    
+                    // Увеличиваем счетчик использований
+                    $stmt_update = $pdo->prepare("
+                        UPDATE promo_codes 
+                        SET current_uses = current_uses + 1 
+                        WHERE id = ?
+                    ");
+                    $stmt_update->execute([$promo_code_id]);
+                } else {
+                    $promo_code_id = null; // Промокод недействителен
+                }
+            } else {
+                $promo_code_id = null; // Промокод не найден
+            }
+        }
+        
+        $total = $subtotal - $promo_discount;
         
         // Рассчитываем дату доставки
         // Курьером: +2-3 дня, самовывоз: +1 день
@@ -174,6 +232,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $placeholders[] = '?';
         }
         
+        // Поля промокода
+        if (in_array('promo_code_id', $columns) && $promo_code_id) {
+            $fields[] = 'promo_code_id';
+            $values[] = $promo_code_id;
+            $placeholders[] = '?';
+        }
+        
+        if (in_array('promo_code_discount', $columns)) {
+            $fields[] = 'promo_code_discount';
+            $values[] = $promo_discount;
+            $placeholders[] = '?';
+        }
+        
         // Создаем заказ
         $sql = "INSERT INTO orders (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
         $stmt = $pdo->prepare($sql);
@@ -199,6 +270,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Очищаем корзину
         $stmt_clear = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
         $stmt_clear->execute([$_SESSION['user_id']]);
+        
+        // Записываем использование промокода, если был применен
+        if ($promo_code_id && $promo_discount > 0) {
+            $stmt_use = $pdo->prepare("
+                INSERT INTO promo_code_uses (promo_code_id, user_id, order_id)
+                VALUES (?, ?, ?)
+            ");
+            $stmt_use->execute([$promo_code_id, $_SESSION['user_id'], $order_id]);
+        }
         
         // Подтверждаем транзакцию
         $pdo->commit();

@@ -185,11 +185,45 @@ include 'includes/header.php';
                     <?php endif; ?>
                 </div>
 
+                <!-- Промокод -->
+                <div class="promo-code-section" style="margin-bottom: 20px; padding: 16px; background: var(--bg-light); border-radius: 8px;">
+                    <label for="promo-code-input" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">Промокод</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="promo-code-input" placeholder="Введите промокод" 
+                               style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; transition: var(--transition);"
+                               onkeypress="if(event.key === 'Enter') applyPromoCode()">
+                        <button type="button" id="apply-promo-btn" onclick="applyPromoCode()" 
+                                style="padding: 10px 20px; background: var(--pink-bright); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: var(--transition);">
+                            Применить
+                        </button>
+                    </div>
+                    <div id="promo-code-message" style="margin-top: 8px; font-size: 13px; min-height: 18px;"></div>
+                    <div id="promo-code-info" style="display: none; margin-top: 12px; padding: 12px; background: rgba(76, 175, 80, 0.1); border-radius: 6px; font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="color: var(--text-color);">Промокод применен:</span>
+                            <span id="promo-code-name" style="font-weight: 600; color: #2E7D32;"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-color);">Скидка:</span>
+                            <span id="promo-discount" style="font-weight: 600; color: #2E7D32;"></span>
+                        </div>
+                        <button type="button" onclick="removePromoCode()" 
+                                style="margin-top: 8px; padding: 6px 12px; background: transparent; border: 1px solid #2E7D32; color: #2E7D32; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                            Удалить промокод
+                        </button>
+                    </div>
+                </div>
+
                 <div class="price-breakdown">
                     <div class="price-row">
                         <span class="price-label">стоимость продуктов</span>
                         <span class="price-dots"></span>
                         <span class="price-value" id="cart-total"><?php echo number_format($total, 0, ',', ' '); ?> Р</span>
+                    </div>
+                    <div class="price-row" id="promo-discount-row" style="display: none;">
+                        <span class="price-label" style="color: #2E7D32;">скидка по промокоду</span>
+                        <span class="price-dots"></span>
+                        <span class="price-value" id="promo-discount-amount" style="color: #2E7D32;">0 Р</span>
                     </div>
                     <div class="price-row total">
                         <span class="price-label">итого</span>

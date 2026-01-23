@@ -107,15 +107,8 @@ include 'includes/header.php';
         <div class="products-grid">
             <?php if (!empty($products)): ?>
                 <?php foreach ($products as $product): ?>
-                    <a href="product.php?id=<?php echo $product['id']; ?>" class="product-card" data-product-id="<?php echo $product['id']; ?>">
-                        <?php if ($product['discount'] > 0): ?>
-                            <span class="product-badge badge-discount"><?php echo $product['discount']; ?>%</span>
-                        <?php elseif ($product['is_new']): ?>
-                            <span class="product-badge badge-new">NEW</span>
-                        <?php elseif ($product['is_featured']): ?>
-                            <span class="product-badge badge-hit">HIT</span>
-                        <?php endif; ?>
-                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                    <div class="product-card">
+                        <div class="product-actions">
                             <?php if (isLoggedIn()): ?>
                                 <button class="product-favorite <?php echo in_array($product['id'], $favorite_product_ids) ? 'active' : ''; ?>" 
                                         data-product-id="<?php echo $product['id']; ?>" 
@@ -143,28 +136,11 @@ include 'includes/header.php';
                             <?php endif; ?>
                         </div>
                         <div class="product-info">
-                            <p class="product-category"><?php echo htmlspecialchars($product['category_name'] ?? 'Косметика'); ?></p>
                             <h3 class="product-name"><?php echo htmlspecialchars($product['name']); ?></h3>
                             <p class="product-brand"><?php echo htmlspecialchars($product['brand_name'] ?? ''); ?></p>
-                            <?php if (!empty($product['description'])): ?>
-                                <p class="product-description-short"><?php echo htmlspecialchars(mb_substr($product['description'], 0, 80)) . (mb_strlen($product['description']) > 80 ? '...' : ''); ?></p>
-                            <?php endif; ?>
-                            <div class="product-meta">
-                                <span class="product-stock <?php echo $product['stock'] > 0 ? 'in-stock' : 'out-of-stock'; ?>">
-                                    <?php echo $product['stock'] > 0 ? 'В наличии (' . $product['stock'] . ')' : 'Нет в наличии'; ?>
-                                </span>
-                            </div>
-                            <p class="product-price">
-                                <?php if ($product['old_price']): ?>
-                                    <span class="price-old"><?php echo number_format($product['old_price'], 0, ',', ' '); ?> Р</span>
-                                <?php endif; ?>
-                                <span class="price-current">
-                                    <?php echo ($product['old_price'] ? 'от ' : ''); ?>
-                                    <?php echo number_format($product['price'], 0, ',', ' '); ?> Р
-                                </span>
-                            </p>
+                            <p class="product-price"><?php echo number_format($product['price'], 0, ',', ' '); ?> Р</p>
                         </div>
-                    </a>
+                    </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p>Товары не найдены</p>

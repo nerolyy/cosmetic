@@ -193,36 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
- 
-    
-    // Активируем только на десктопе
-    if (window.innerWidth > 768) {
-        createCursorFollower();
-        
-        document.addEventListener('mousemove', (e) => {
-            if (cursorFollower) {
-                cursorFollower.style.display = 'block';
-                cursorFollower.style.left = e.clientX - 10 + 'px';
-                cursorFollower.style.top = e.clientY - 10 + 'px';
-            }
-        });
-        
-        interactiveElements.forEach(element => {
-            element.addEventListener('mouseenter', () => {
-                if (cursorFollower) {
-                    cursorFollower.style.transform = 'scale(1.5)';
-                    cursorFollower.style.borderColor = 'rgba(102, 126, 234, 0.8)';
-                }
-            });
-            
-            element.addEventListener('mouseleave', () => {
-                if (cursorFollower) {
-                    cursorFollower.style.transform = 'scale(1)';
-                    cursorFollower.style.borderColor = 'rgba(102, 126, 234, 0.5)';
-                }
-            });
-        });
-    }
+    // Cursor follower функциональность отключена (функция не определена)
+    // Можно добавить позже, если потребуется
     
     // ============================================
     // LOADING ANIMATION
@@ -246,6 +218,217 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         document.body.style.setProperty('--animation-duration', '0.01ms');
         document.body.style.setProperty('--transition-duration', '0.01ms');
+    }
+    
+    // ============================================
+    // UNIFIED SLIDER (Hero + Promo)
+    // ============================================
+    let sliderInitialized = false;
+    
+    function initUnifiedSlider() {
+        // Предотвращаем повторную инициализацию
+        if (sliderInitialized) {
+            return;
+        }
+        
+        const unifiedSlider = document.querySelector('.unified-slider-wrapper');
+        if (!unifiedSlider) {
+            console.warn('Unified slider wrapper not found');
+            return;
+        }
+        
+        // Проверяем, не инициализирован ли уже слайдер
+        if (unifiedSlider.dataset.initialized === 'true') {
+            return;
+        }
+        
+        const slides = unifiedSlider.querySelectorAll('.unified-slide');
+        if (slides.length === 0) {
+            console.warn('No slides found');
+            return;
+        }
+        
+        console.log('Initializing unified slider with', slides.length, 'slides');
+        
+        // Помечаем как инициализированный
+        unifiedSlider.dataset.initialized = 'true';
+        sliderInitialized = true;
+        
+        const indicators = document.querySelectorAll('.unified-indicator');
+        const prevBtn = document.querySelector('.unified-slider-prev');
+        const nextBtn = document.querySelector('.unified-slider-next');
+        
+        let currentSlide = 0;
+        let autoSlideInterval = null;
+        const slideDuration = 7000; // 7 секунд
+        
+        // Функция для переключения слайда
+        function goToSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            
+            // Убираем активный класс со всех слайдов и индикаторов
+            slides.forEach(slide => slide.classList.remove('unified-slide-active'));
+            indicators.forEach(indicator => indicator.classList.remove('unified-indicator-active'));
+            
+            // Добавляем активный класс к текущему слайду и индикатору
+            if (slides[index]) {
+                slides[index].classList.add('unified-slide-active');
+            }
+            if (indicators[index]) {
+                indicators[index].classList.add('unified-indicator-active');
+            }
+            
+            currentSlide = index;
+            
+            // Перезапускаем анимацию для нового слайда
+            const activeSlide = slides[index];
+            if (activeSlide) {
+                const labels = activeSlide.querySelectorAll('.promo-label, .promo-label-secondary');
+                const mainContent = activeSlide.querySelector('.promo-main-content');
+                
+                // Сбрасываем анимации
+                labels.forEach(label => {
+                    label.style.animation = 'none';
+                    void label.offsetWidth; // Trigger reflow
+                    label.style.animation = null;
+                });
+                
+                if (mainContent) {
+                    mainContent.style.animation = 'none';
+                    void mainContent.offsetWidth;
+                    mainContent.style.animation = null;
+                }
+            }
+        }
+        
+        // Функция для следующего слайда
+        function nextSlide() {
+            const next = (currentSlide + 1) % slides.length;
+            goToSlide(next);
+        }
+        
+        // Функция для предыдущего слайда
+        function prevSlide() {
+            const prev = (currentSlide - 1 + slides.length) % slides.length;
+            goToSlide(prev);
+        }
+        
+        // Автоматическое переключение слайдов
+        function startAutoSlide() {
+            stopAutoSlide(); // Очищаем предыдущий интервал если есть
+            autoSlideInterval = setInterval(() => {
+                nextSlide();
+            }, slideDuration);
+        }
+        
+        function stopAutoSlide() {
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = null;
+            }
+        }
+        
+        // Обработчики для кнопок навигации
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                stopAutoSlide();
+                nextSlide();
+                startAutoSlide();
+            });
+        } else {
+            console.warn('Next button not found');
+        }
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                stopAutoSlide();
+                prevSlide();
+                startAutoSlide();
+            });
+        } else {
+            console.warn('Prev button not found');
+        }
+        
+        // Обработчики для индикаторов
+        indicators.forEach((indicator) => {
+            indicator.addEventListener('click', (e) => {
+                e.preventDefault();
+                const slideIndex = parseInt(indicator.getAttribute('data-slide'));
+                if (!isNaN(slideIndex)) {
+                    stopAutoSlide();
+                    goToSlide(slideIndex);
+                    startAutoSlide();
+                }
+            });
+        });
+        
+        // Останавливаем автопереключение при наведении мыши
+        unifiedSlider.addEventListener('mouseenter', stopAutoSlide);
+        unifiedSlider.addEventListener('mouseleave', startAutoSlide);
+        
+        // Убеждаемся, что первый слайд активен
+        goToSlide(0);
+        
+        // Запускаем автопереключение с небольшой задержкой
+        setTimeout(() => {
+            startAutoSlide();
+        }, 1000);
+        
+        // Анимация промокода при загрузке
+        const promoCode = document.getElementById('promo-code');
+        if (promoCode) {
+            // Добавляем эффект "копирования" при клике
+            promoCode.addEventListener('click', function() {
+                const code = this.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = this.textContent;
+                    this.textContent = 'СКОПИРОВАНО!';
+                    this.style.background = 'rgba(76, 175, 80, 0.3)';
+                    this.style.borderColor = 'rgba(76, 175, 80, 0.6)';
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.background = '';
+                        this.style.borderColor = '';
+                    }, 2000);
+                }).catch(() => {
+                    // Fallback для старых браузеров
+                    const textArea = document.createElement('textarea');
+                    textArea.value = code;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    const originalText = this.textContent;
+                    this.textContent = 'СКОПИРОВАНО!';
+                    this.style.background = 'rgba(76, 175, 80, 0.3)';
+                    this.style.borderColor = 'rgba(76, 175, 80, 0.6)';
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.background = '';
+                        this.style.borderColor = '';
+                    }, 2000);
+                });
+            });
+            
+            // Добавляем курсор pointer для промокода
+            promoCode.style.cursor = 'pointer';
+        }
+    }
+    
+    // Инициализируем слайдер
+    // Пробуем сразу, если DOM уже загружен
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initUnifiedSlider);
+    } else {
+        // DOM уже загружен, инициализируем сразу
+        setTimeout(initUnifiedSlider, 100);
     }
     
 });
