@@ -58,3 +58,4 @@ ON DUPLICATE KEY UPDATE email=VALUES(email);
 -- 4. Можно использовать INSERT IGNORE вместо ON DUPLICATE KEY UPDATE
 
 
+

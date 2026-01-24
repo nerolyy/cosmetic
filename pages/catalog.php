@@ -33,6 +33,9 @@ $max_price_db = (float)($price_range['max_price'] ?? 10000);
 $min_price = isset($_GET['min_price']) && $_GET['min_price'] !== '' ? (float)$_GET['min_price'] : null;
 $max_price = isset($_GET['max_price']) && $_GET['max_price'] !== '' ? (float)$_GET['max_price'] : null;
 
+// Получаем параметр сортировки
+$sort = $_GET['sort'] ?? 'newest';
+
 // Получаем избранные товары пользователя
 $favorite_product_ids = [];
 $cart_product_ids = [];
@@ -73,13 +76,34 @@ if ($max_price !== null && $max_price > 0) {
     $params[] = $max_price;
 }
 
+// Определяем сортировку
+$order_by = "p.created_at DESC"; // По умолчанию - новые сначала
+switch ($sort) {
+    case 'price_asc':
+        $order_by = "p.price ASC";
+        break;
+    case 'price_desc':
+        $order_by = "p.price DESC";
+        break;
+    case 'name_asc':
+        $order_by = "p.name ASC";
+        break;
+    case 'name_desc':
+        $order_by = "p.name DESC";
+        break;
+    case 'newest':
+    default:
+        $order_by = "p.created_at DESC";
+        break;
+}
+
 $sql = "
     SELECT p.*, b.name as brand_name, c.name as category_name, c.slug as category_slug
     FROM products p 
     LEFT JOIN brands b ON p.brand_id = b.id 
     LEFT JOIN categories c ON p.category_id = c.id 
     WHERE $where
-    ORDER BY p.created_at DESC
+    ORDER BY $order_by
 ";
 $stmt_products = $pdo->prepare($sql);
 $stmt_products->execute($params);
@@ -100,6 +124,7 @@ include __DIR__ . '/../includes/header.php';
                                 $query_params = [];
                                 if ($min_price !== null) $query_params[] = 'min_price=' . urlencode($min_price);
                                 if ($max_price !== null) $query_params[] = 'max_price=' . urlencode($max_price);
+                                if ($sort && $sort !== 'newest') $query_params[] = 'sort=' . urlencode($sort);
                                 echo !empty($query_params) ? '&' . implode('&', $query_params) : '';
                             ?>" class="catalog-nav-link">
                                 <?php echo htmlspecialchars($root_cat['name']); ?>
@@ -118,6 +143,7 @@ include __DIR__ . '/../includes/header.php';
                                             $query_params = [];
                                             if ($min_price !== null) $query_params[] = 'min_price=' . urlencode($min_price);
                                             if ($max_price !== null) $query_params[] = 'max_price=' . urlencode($max_price);
+                                            if ($sort && $sort !== 'newest') $query_params[] = 'sort=' . urlencode($sort);
                                             echo !empty($query_params) ? '&' . implode('&', $query_params) : '';
                                         ?>" class="catalog-nav-link">
                                             <?php echo htmlspecialchars($child_cat['name']); ?>
@@ -135,45 +161,78 @@ include __DIR__ . '/../includes/header.php';
     <div class="catalog-content">
         <h1><?php echo htmlspecialchars($page_title); ?></h1>
         
-        <!-- Фильтр по цене -->
-        <div class="price-filter">
-            <form method="GET" action="" class="price-filter-form">
-                <?php if ($category_slug): ?>
-                    <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_slug); ?>">
-                <?php endif; ?>
-                <div class="price-filter-content">
-                    <span class="price-filter-label">Цена:</span>
-                    <div class="price-inputs">
-                        <div class="price-input-group">
-                            <label for="min_price">От</label>
-                            <input type="number" 
-                                   id="min_price" 
-                                   name="min_price" 
-                                   min="0" 
-                                   step="100" 
-                                   value="<?php echo $min_price !== null ? htmlspecialchars($min_price) : ''; ?>" 
-                                   placeholder="<?php echo number_format($min_price_db, 0, ',', ' '); ?>">
+        <!-- Фильтр по цене и сортировка -->
+        <div class="catalog-filters">
+            <div class="price-filter">
+                <form method="GET" action="" class="price-filter-form">
+                    <?php if ($category_slug): ?>
+                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_slug); ?>">
+                    <?php endif; ?>
+                    <?php if ($sort && $sort !== 'newest'): ?>
+                        <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
+                    <?php endif; ?>
+                    <div class="price-filter-content">
+                        <span class="price-filter-label">Цена:</span>
+                        <div class="price-inputs">
+                            <div class="price-input-group">
+                                <label for="min_price">От</label>
+                                <input type="number" 
+                                       id="min_price" 
+                                       name="min_price" 
+                                       min="0" 
+                                       step="100" 
+                                       value="<?php echo $min_price !== null ? htmlspecialchars($min_price) : ''; ?>" 
+                                       placeholder="<?php echo number_format($min_price_db, 0, ',', ' '); ?>">
+                            </div>
+                            <span class="price-separator">—</span>
+                            <div class="price-input-group">
+                                <label for="max_price">До</label>
+                                <input type="number" 
+                                       id="max_price" 
+                                       name="max_price" 
+                                       min="0" 
+                                       step="100" 
+                                       value="<?php echo $max_price !== null ? htmlspecialchars($max_price) : ''; ?>" 
+                                       placeholder="<?php echo number_format($max_price_db, 0, ',', ' '); ?>">
+                            </div>
                         </div>
-                        <span class="price-separator">—</span>
-                        <div class="price-input-group">
-                            <label for="max_price">До</label>
-                            <input type="number" 
-                                   id="max_price" 
-                                   name="max_price" 
-                                   min="0" 
-                                   step="100" 
-                                   value="<?php echo $max_price !== null ? htmlspecialchars($max_price) : ''; ?>" 
-                                   placeholder="<?php echo number_format($max_price_db, 0, ',', ' '); ?>">
+                        <div class="price-filter-actions">
+                            <button type="submit" class="btn-filter-apply">Применить</button>
+                            <?php if ($min_price !== null || $max_price !== null): ?>
+                                <a href="?<?php 
+                                    $reset_params = [];
+                                    if ($category_slug) $reset_params[] = 'category=' . urlencode($category_slug);
+                                    if ($sort && $sort !== 'newest') $reset_params[] = 'sort=' . urlencode($sort);
+                                    echo !empty($reset_params) ? implode('&', $reset_params) : '';
+                                ?>" class="btn-filter-reset">Сбросить</a>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="price-filter-actions">
-                        <button type="submit" class="btn-filter-apply">Применить</button>
-                        <?php if ($min_price !== null || $max_price !== null): ?>
-                            <a href="?<?php echo $category_slug ? 'category=' . htmlspecialchars($category_slug) : ''; ?>" class="btn-filter-reset">Сбросить</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
+            
+            <!-- Сортировка -->
+            <div class="sort-filter">
+                <form method="GET" action="" class="sort-filter-form" id="sortForm">
+                    <?php if ($category_slug): ?>
+                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_slug); ?>">
+                    <?php endif; ?>
+                    <?php if ($min_price !== null): ?>
+                        <input type="hidden" name="min_price" value="<?php echo htmlspecialchars($min_price); ?>">
+                    <?php endif; ?>
+                    <?php if ($max_price !== null): ?>
+                        <input type="hidden" name="max_price" value="<?php echo htmlspecialchars($max_price); ?>">
+                    <?php endif; ?>
+                    <label for="sort" class="sort-label">Сортировка:</label>
+                    <select name="sort" id="sort" class="sort-select">
+                        <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Сначала новые</option>
+                        <option value="price_asc" <?php echo $sort === 'price_asc' ? 'selected' : ''; ?>>Цена: по возрастанию</option>
+                        <option value="price_desc" <?php echo $sort === 'price_desc' ? 'selected' : ''; ?>>Цена: по убыванию</option>
+                        <option value="name_asc" <?php echo $sort === 'name_asc' ? 'selected' : ''; ?>>Название: А-Я</option>
+                        <option value="name_desc" <?php echo $sort === 'name_desc' ? 'selected' : ''; ?>>Название: Я-А</option>
+                    </select>
+                </form>
+            </div>
         </div>
         
         <div class="products-grid">
@@ -226,4 +285,17 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.getElementById('sort');
+    const sortForm = document.getElementById('sortForm');
+    
+    if (sortSelect && sortForm) {
+        sortSelect.addEventListener('change', function() {
+            sortForm.submit();
+        });
+    }
+});
+</script>
 
