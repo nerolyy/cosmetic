@@ -1,0 +1,60 @@
+-- Пример файла data.sql для импорта данных
+-- Этот файл будет автоматически импортирован при запуске install.php
+-- 
+-- ИНСТРУКЦИЯ:
+-- 1. Экспортируйте вашу базу данных в phpMyAdmin (Экспорт -> SQL)
+-- 2. Сохраните файл как data.sql в корне проекта
+-- 3. Или создайте файл вручную, используя этот пример
+
+-- ВАЖНО: Не включайте команды CREATE DATABASE или USE database
+-- Только INSERT, UPDATE и другие запросы с данными
+
+-- Пример: Добавление брендов
+INSERT INTO brands (name, slug) VALUES
+('Dior', 'dior'),
+('Chanel', 'chanel'),
+('Yves Saint Laurent', 'ysl'),
+('MAC', 'mac'),
+('L\'Oreal', 'loreal')
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+-- Пример: Добавление категорий
+INSERT INTO categories (name, slug) VALUES
+('Лицо', 'litso'),
+('Глаза', 'glaza'),
+('Губы', 'guby'),
+('Волосы', 'volosy'),
+('Тело', 'telo')
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+-- Пример: Добавление товаров
+-- ВАЖНО: Убедитесь, что category_id и brand_id существуют в таблицах
+INSERT INTO products (name, slug, description, price, old_price, discount, category_id, brand_id, stock, is_new, is_featured) VALUES
+('Помада Rouge Dior', 'pomada-rouge-dior', 'Премиальная помада от Dior', 2500.00, 3000.00, 17, 1, 1, 10, 1, 1),
+('Тушь для ресниц Volume', 'tush-dlya-resnits', 'Объемная тушь для ресниц', 1800.00, NULL, 0, 2, 2, 15, 0, 1)
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+-- Пример: Добавление промокодов
+INSERT INTO promo_codes (code, description, discount_type, discount_value, min_order_amount, is_active) VALUES
+('FIRST50', 'Скидка 50% на первый заказ', 'percentage', 50, 0, 1),
+('WELCOME10', 'Скидка 10% для новых клиентов', 'percentage', 10, 1000, 1)
+ON DUPLICATE KEY UPDATE code=VALUES(code);
+
+-- Пример: Добавление магазинов
+INSERT INTO shops (name, address, latitude, longitude, description, how_to_get, phone, work_hours) VALUES
+('Косметика на Красной площади', 'ул. Никольская, д. 15', 55.7558, 37.6173, 'Флагманский магазин', 'Метро: Охотный ряд', '+7 (495) 123-45-67', 'Ежедневно с 10:00 до 22:00')
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+-- Пример: Добавление пользователей (с хешированными паролями)
+-- Пароль 'admin123' захеширован через password_hash()
+INSERT INTO users (email, password, role, name, phone) VALUES
+('admin@cosmetic.ru', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'Администратор', '+7 (999) 123-45-67')
+ON DUPLICATE KEY UPDATE email=VALUES(email);
+
+-- ПРИМЕЧАНИЯ:
+-- 1. Используйте ON DUPLICATE KEY UPDATE для безопасного повторного импорта
+-- 2. Убедитесь, что внешние ключи (category_id, brand_id) существуют
+-- 3. Для паролей используйте password_hash() в PHP, затем вставьте хеш в SQL
+-- 4. Можно использовать INSERT IGNORE вместо ON DUPLICATE KEY UPDATE
+
+

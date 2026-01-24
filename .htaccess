@@ -1,0 +1,17 @@
+RewriteEngine On
+RewriteBase /cosmetic/
+
+# Если файл существует, отдаем его как есть (для api, assets, admin и т.д.)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Если директория существует, отдаем ее как есть
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Перенаправляем все запросы к страницам на index.php
+RewriteCond %{REQUEST_URI} !^/cosmetic/(api|assets|admin|config|includes|uploads|pages)/
+RewriteRule ^(catalog|product|brands|shops|cart|profile|login|register|logout)(\.php)?$ index.php [L,QSA]
+
+# Главная страница
+RewriteRule ^$ index.php [L]

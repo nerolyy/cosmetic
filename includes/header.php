@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?>Косметика</title>
     <!-- CSS разбито по модулям: базовые стили, layout, компоненты, страницы -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/base.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/layout.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/components.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/pages.css">
-    <!-- старый общий файл пока тоже подключен, чтобы ничего не сломать -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=<?php echo time(); ?>">
-    <script src="<?php echo BASE_URL; ?>js/favorites.js" defer></script>
-    <script src="<?php echo BASE_URL; ?>js/cart.js" defer></script>
+    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/base.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/layout.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/components.css">
+    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/pages.css">
+    <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/style.css?v=<?php echo time(); ?>">
+    <script src="<?php echo ASSETS_URL; ?>js/favorites.js" defer></script>
+    <script src="<?php echo ASSETS_URL; ?>js/cart.js" defer></script>
+    <script src="<?php echo ASSETS_URL; ?>js/product.js" defer></script>
 </head>
 <body>
     <header class="main-header">
@@ -28,7 +28,7 @@
                         <a href="<?php echo BASE_URL; ?>catalog.php">каталог</a>
                         <a href="<?php echo BASE_URL; ?>brands.php">бренды</a>
                         <a href="<?php echo BASE_URL; ?>">новинки</a>
-                        <a href="<?php echo BASE_URL; ?>">акции</a>
+                        
                         <a href="<?php echo BASE_URL; ?>shops.php">магазины</a>
                     </nav>
                     <div class="header-icons">

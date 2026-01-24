@@ -1,5 +1,5 @@
 <?php
-require_once '../config.php';
+require_once __DIR__ . '/../config/config.php';
 
 if (!isLoggedIn() || !isAdmin()) {
     header('Location: ' . BASE_URL . 'login.php');
@@ -84,7 +84,7 @@ $stmt_parents = $pdo->query("SELECT * FROM categories WHERE parent_id IS NULL OR
 $parent_categories = $stmt_parents->fetchAll();
 
 $page_title = 'Управление категориями';
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="admin-container">
@@ -201,5 +201,5 @@ include '../includes/header.php';
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 

@@ -1,5 +1,5 @@
 <?php
-require_once '../config.php';
+require_once __DIR__ . '/../config/config.php';
 
 if (!isLoggedIn() || !isAdmin()) {
     header('Location: ' . BASE_URL . 'login.php');
@@ -130,7 +130,7 @@ $stmt_users = $pdo->query("SELECT id, name, email FROM users ORDER BY name");
 $all_users = $stmt_users->fetchAll();
 
 $page_title = 'Управление заказами';
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="admin-container">
@@ -415,5 +415,5 @@ include '../includes/header.php';
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 
