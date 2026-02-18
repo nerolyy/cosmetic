@@ -48,19 +48,12 @@ try {
 // ==========================
 
 /**
- * Проверка авторизации пользователя
- */
-function isLoggedIn(): bool
-{
-    return !empty($_SESSION['user_id']);
-}
-
-/**
  * Получить текущего пользователя
  */
 function getCurrentUser(): ?array
 {
-    if (!isLoggedIn()) {
+    // Если в сессии нет ID пользователя — он не авторизован
+    if (empty($_SESSION['user_id'])) {
         return null;
     }
 
@@ -96,6 +89,15 @@ function getCurrentUser(): ?array
     $_SESSION['last_user_load'] = time();
     
     return $user;
+}
+
+/**
+ * Проверка авторизации пользователя
+ * Дополнительно убеждаемся, что пользователь действительно существует в БД.
+ */
+function isLoggedIn(): bool
+{
+    return getCurrentUser() !== null;
 }
 
 /**

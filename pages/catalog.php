@@ -23,6 +23,24 @@ foreach ($child_categories_data as $child) {
     $child_categories[$child['parent_id']][] = $child;
 }
 
+// Вспомогательная функция: рекурсивно собрать все вложенные ID категорий
+// Нужно, чтобы для корневых категорий (например, "Макияж") отображались товары
+// не только из прямых подкатегорий, но и из подподкатегорий.
+function collectCategoryTreeIds($parentId, $child_categories, array &$ids): void
+{
+    if (!isset($child_categories[$parentId])) {
+        return;
+    }
+
+    foreach ($child_categories[$parentId] as $child) {
+        $childId = (int)$child['id'];
+        if (!in_array($childId, $ids, true)) {
+            $ids[] = $childId;
+            collectCategoryTreeIds($childId, $child_categories, $ids);
+        }
+    }
+}
+
 // Получаем минимальную и максимальную цену для фильтра
 $stmt_price_range = $pdo->query("SELECT MIN(price) as min_price, MAX(price) as max_price FROM products");
 $price_range = $stmt_price_range->fetch();
@@ -54,13 +72,11 @@ $where = "1=1";
 $params = [];
 
 if ($current_category) {
-    $category_ids = [$current_category['id']];
-    if (isset($child_categories[$current_category['id']])) {
-        foreach ($child_categories[$current_category['id']] as $child) {
-            $category_ids[] = $child['id'];
-        }
-    }
-    $placeholders = str_repeat('?,', count($category_ids) - 1) . '?';
+    // Берём текущую категорию и все её вложенные категории любого уровня
+    $category_ids = [(int)$current_category['id']];
+    collectCategoryTreeIds((int)$current_category['id'], $child_categories, $category_ids);
+
+    $placeholders = implode(',', array_fill(0, count($category_ids), '?'));
     $where = "p.category_id IN ($placeholders)";
     $params = $category_ids;
 }
