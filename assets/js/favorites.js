@@ -12,8 +12,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!productId) return;
 
-            fetch('/cosmetic/api/product_favorite.php', {
+            fetch(window.cosmeticAppPath('api/product_favorite.php'), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             this.setAttribute('aria-label', 'Удалить из избранного');
                         }
                     } else if (data.message && data.message.includes('авторизац')) {
-                        window.location.href = '/cosmetic/login.php';
+                        window.location.href = window.cosmeticAppPath('login.php');
                     }
                 })
                 .catch(error => {
@@ -81,8 +82,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!productId) return;
 
-            fetch('/cosmetic/api/product_favorite.php', {
+            fetch(window.cosmeticAppPath('api/product_favorite.php'), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
@@ -111,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             this.setAttribute('aria-label', 'Удалить из избранного');
                         }
                     } else if (data.message && data.message.includes('авторизац')) {
-                        window.location.href = '/cosmetic/login.php';
+                        window.location.href = window.cosmeticAppPath('login.php');
                     }
                 })
                 .catch(error => {
@@ -139,8 +141,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!brandId) return;
 
-        fetch('/cosmetic/api/brand_favorite.php', {
+        fetch(window.cosmeticAppPath('api/brand_favorite.php'), {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

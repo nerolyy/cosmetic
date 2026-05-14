@@ -45,6 +45,8 @@ include __DIR__ . '/../includes/header.php';
                 <li><a href="users.php" class="admin-nav-link">Пользователи</a></li>
                 <li><a href="shops.php" class="admin-nav-link">Магазины</a></li>
                 <li><a href="promo_codes.php" class="admin-nav-link">Промокоды</a></li>
+                <li><a href="feedback.php" class="admin-nav-link">Обратная связь</a></li>
+                <li><a href="seed_catalog.php" class="admin-nav-link">Seed каталога</a></li>
                 <li><a href="<?php echo BASE_URL; ?>" class="admin-nav-link">На сайт</a></li>
             </ul>
         </nav>

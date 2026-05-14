@@ -1,3 +1,21 @@
+/**
+ * URL для fetch. Не использовать глобальное `function cosmeticUrl` — в браузере оно станет window.cosmeticUrl и перезапишет разрешение путей из header.php.
+ */
+const cosmeticFetchUrl = function (relativePath) {
+    if (typeof window.cosmeticAppPath === 'function') {
+        return window.cosmeticAppPath(relativePath);
+    }
+    const p = String(relativePath || '').replace(/^\//, '');
+    if (typeof window.COSMETIC_BASE_URL === 'string' && window.COSMETIC_BASE_URL) {
+        try {
+            const u = new URL(window.COSMETIC_BASE_URL);
+            const root = (u.pathname || '/').replace(/\/?$/, '/');
+            return root + p;
+        } catch (e) {}
+    }
+    return '/' + p;
+};
+
 // Функция для показа toast-уведомления
 function showToast(title, message, type = 'success') {
     // Удаляем существующие уведомления
@@ -124,8 +142,9 @@ function applyPromoCode() {
     promoMessage.textContent = '';
     promoMessage.style.color = '';
     
-    fetch('/cosmetic/api/check_promo_code.php', {
+    fetch(cosmeticFetchUrl('api/check_promo_code.php'), {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -153,7 +172,8 @@ function applyPromoCode() {
                 id: data.promo_id,
                 code: data.promo_code,
                 description: data.description,
-                discount: data.discount
+                discount: data.discount,
+                source: data.promo_source || 'promo_codes'
             };
             promoDiscount = data.discount;
             
@@ -244,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Если товар уже в корзине, переходим на страницу корзины
         if (isInCart) {
-            window.location.href = 'cart.php';
+            window.location.href = cosmeticFetchUrl('cart.php');
             return;
         }
 
@@ -253,8 +273,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch('/cosmetic/api/cart_api.php', {
+        fetch(cosmeticFetchUrl('api/cart_api.php'), {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -281,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Показываем уведомление
                     showToast('Товар добавлен', 'Товар успешно добавлен в корзину', 'success');
                 } else if (data.message && data.message.includes('авторизац')) {
-                    window.location.href = '/cosmetic/login.php';
+                    window.location.href = cosmeticFetchUrl('login.php');
                 } else {
                     showToast('Ошибка', data.message || 'Ошибка при добавлении товара в корзину', 'error');
                 }
@@ -413,8 +434,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Удаление товара из корзины
     function removeCartItem(productId, itemElement) {
-        fetch('/cosmetic/api/cart_api.php', {
+        fetch(cosmeticFetchUrl('api/cart_api.php'), {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -449,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             
                             // Перенаправляем на главную страницу через 2 секунды
                             setTimeout(() => {
-                                window.location.href = 'index.php';
+                                window.location.href = cosmeticFetchUrl('index.php');
                             }, 2000);
                         }
                         
@@ -494,8 +516,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         
-        fetch('/cosmetic/api/cart_api.php', {
+        fetch(cosmeticFetchUrl('api/cart_api.php'), {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -826,18 +849,49 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Добавляем промокод, если применен
             if (appliedPromoCode && appliedPromoCode.id) {
-                formData.append('promo_code_id', appliedPromoCode.id);
+                if (appliedPromoCode.source === 'wheel') {
+                    formData.append('wheel_reward_id', appliedPromoCode.id);
+                } else {
+                    formData.append('promo_code_id', appliedPromoCode.id);
+                }
             }
             
-            fetch('/cosmetic/api/create_order.php', {
+            fetch(cosmeticFetchUrl('api/create_order.php'), {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: formData.toString()
             })
-                .then(response => response.json())
+                .then(async (response) => {
+                    const text = await response.text();
+                    let data = null;
+                    try {
+                        data = text ? JSON.parse(text) : null;
+                    } catch (parseErr) {
+                        const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 280);
+                        throw new Error(
+                            snippet
+                                ? 'Ответ сервера не JSON (HTTP ' + response.status + '): ' + snippet
+                                : 'Пустой ответ сервера (HTTP ' + response.status + ')'
+                        );
+                    }
+                    if (!response.ok && data && !data.message && !data.errors) {
+                        data.message = 'HTTP ' + response.status;
+                    }
+                    return data;
+                })
                 .then(data => {
+                    if (!data || typeof data !== 'object') {
+                        if (orderMessage) {
+                            orderMessage.textContent = 'Некорректный ответ сервера';
+                            orderMessage.className = 'order-message error';
+                        }
+                        orderBtn.disabled = false;
+                        orderBtn.textContent = 'заказать';
+                        return;
+                    }
                     if (data.success) {
                         if (orderMessage) {
                             orderMessage.textContent = 'Заказ успешно оформлен!';
@@ -847,11 +901,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         
                         // Перенаправляем через 2 секунды
                         setTimeout(() => {
-                            window.location.href = 'profile.php';
+                            window.location.href = cosmeticFetchUrl('profile.php');
                         }, 2000);
                     } else {
                         if (orderMessage) {
-                            orderMessage.textContent = data.message || 'Ошибка при оформлении заказа';
+                            const msg =
+                                data.message ||
+                                (data.errors && typeof data.errors === 'object'
+                                    ? Object.values(data.errors).join(' ')
+                                    : '') ||
+                                'Ошибка при оформлении заказа';
+                            orderMessage.textContent = msg;
                             orderMessage.className = 'order-message error';
                         }
                         
@@ -872,7 +932,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(error => {
                     console.error('Ошибка при оформлении заказа:', error);
                     if (orderMessage) {
-                        orderMessage.textContent = 'Произошла ошибка. Попробуйте позже.';
+                        const msg =
+                            error && error.message
+                                ? error.message
+                                : 'Произошла ошибка. Попробуйте позже.';
+                        orderMessage.textContent = msg.length > 400 ? msg.slice(0, 400) + '…' : msg;
                         orderMessage.className = 'order-message error';
                     }
                     orderBtn.disabled = false;

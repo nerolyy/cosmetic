@@ -2397,6 +2397,56 @@ img {
     text-align: center;
 }
 
+.recaptcha-field {
+    margin-bottom: 20px;
+}
+
+.recaptcha-field .g-recaptcha {
+    display: inline-block;
+}
+
+.recaptcha-missing {
+    margin: 0;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #b71c1c;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+}
+
+.recaptcha-missing code {
+    font-size: 12px;
+}
+
+/* Шаг подтверждения: reCAPTCHA + «Отправить снова» + «Начать заново» без растягивания по высоте */
+.register-verify-extras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.register-verify-extras .register-resend-form {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+
+.register-verify-extras .register-reset-link {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+    .register-verify-extras .register-resend-form {
+        flex-basis: 100%;
+    }
+}
+
 .form-group {
     margin-bottom: 20px;
 }

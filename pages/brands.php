@@ -31,11 +31,12 @@ if ($search) {
     }
 }
 
-$sql = "SELECT b.*, 
+$sql = "SELECT b.*,
         CASE WHEN bf.id IS NOT NULL THEN 1 ELSE 0 END as is_favorite
-        FROM brands b 
+        FROM brands b
         LEFT JOIN brand_favorites bf ON b.id = bf.brand_id AND bf.user_id = ?
         WHERE $where
+          AND EXISTS (SELECT 1 FROM products p WHERE p.brand_id = b.id)
         ORDER BY b.name";
         
 $params = array_merge([isLoggedIn() ? $_SESSION['user_id'] : 0], $params);
@@ -69,7 +70,13 @@ foreach ($brands as $brand) {
 $favorite_brands = [];
 if (isLoggedIn() && !empty($favorite_brand_ids)) {
     $placeholders = str_repeat('?,', count($favorite_brand_ids) - 1) . '?';
-    $stmt_fav = $pdo->prepare("SELECT * FROM brands WHERE id IN ($placeholders) ORDER BY name");
+    $stmt_fav = $pdo->prepare("
+        SELECT *
+        FROM brands
+        WHERE id IN ($placeholders)
+          AND EXISTS (SELECT 1 FROM products p WHERE p.brand_id = brands.id)
+        ORDER BY name
+    ");
     $stmt_fav->execute($favorite_brand_ids);
     $favorite_brands = $stmt_fav->fetchAll();
 }

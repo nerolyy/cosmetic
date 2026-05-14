@@ -27,6 +27,7 @@
                             <li><a href="<?php echo BASE_URL; ?>catalog.php">Каталог</a></li>
                             <li><a href="<?php echo BASE_URL; ?>brands.php">Бренды</a></li>
                             <li><a href="<?php echo BASE_URL; ?>shops.php">Магазины</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>feedback.php">Обратная связь</a></li>
                         </ul>
                     </div>
 

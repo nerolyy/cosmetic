@@ -18,7 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (empty($email) || empty($password)) {
+    if (!recaptcha_verify_post()) {
+        $error = recaptcha_is_configured()
+            ? 'Подтвердите, что вы не робот (reCAPTCHA), и попробуйте снова.' . recaptcha_failure_hint_for_user()
+            : 'Капча не настроена на сервере. Обратитесь к администратору.';
+    } elseif (empty($email) || empty($password)) {
         $error = 'Заполните все поля';
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -66,6 +70,8 @@ include __DIR__ . '/../includes/header.php';
                 <label for="password">Пароль</label>
                 <input type="password" id="password" name="password" required>
             </div>
+
+            <?php include __DIR__ . '/../includes/captcha_field.php'; ?>
 
             <button type="submit" class="btn btn-primary">Войти</button>
         </form>

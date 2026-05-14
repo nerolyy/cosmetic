@@ -23,9 +23,49 @@
 .logo {
     display: flex;
     align-items: center;
+    gap: 12px;
     color: var(--pink-bright); /* Яркий розовый для логотипа */
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.logo-mark {
+    height: 44px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    display: block;
+}
+
+.logo-wordmark {
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+    .logo-wordmark {
+        font-size: 16px;
+    }
+
+    .logo-mark {
+        max-width: 120px;
+        height: 38px;
+    }
+}
+
+@media (max-width: 520px) {
+    .logo {
+        font-size: 15px;
+        gap: 8px;
+    }
+
+    .logo-mark {
+        max-width: 100px;
+        height: 36px;
+    }
 }
 
 .nav-menu {

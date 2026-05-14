@@ -1,7 +1,10 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 
-header('Content-Type: application/json');
+// Не выводить HTML/notice вместе с JSON — иначе браузер не сможет разобрать ответ
+ini_set('display_errors', '0');
+
+header('Content-Type: application/json; charset=utf-8');
 
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Необходима авторизация']);
@@ -15,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = trim($_POST['address'] ?? '');
     $shop_id = !empty($_POST['shop_id']) ? (int)$_POST['shop_id'] : null;
     $promo_code_id = !empty($_POST['promo_code_id']) ? (int)$_POST['promo_code_id'] : null;
+    $wheel_reward_id = !empty($_POST['wheel_reward_id']) ? (int)$_POST['wheel_reward_id'] : null;
     
     $errors = [];
     
@@ -71,7 +75,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => false, 'errors' => $errors]);
         exit;
     }
-    
+
+    // DDL (CREATE TABLE) в MySQL делает неявный COMMIT — только до beginTransaction()
+    wheelEnsureTables();
+
     try {
         // Получаем данные текущего пользователя (для email и других полей)
         $user = getCurrentUser();
@@ -93,9 +100,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
         $stmt->execute([$_SESSION['user_id']]);
         $cart_items = $stmt->fetchAll();
-        
+
         if (empty($cart_items)) {
-            throw new Exception('Корзина пуста');
+            $stmtCnt = $pdo->prepare('SELECT COUNT(*) FROM cart WHERE user_id = ?');
+            $stmtCnt->execute([(int) $_SESSION['user_id']]);
+            $rawCartCount = (int) $stmtCnt->fetchColumn();
+            if ($rawCartCount > 0) {
+                throw new Exception(
+                    'В корзине есть позиции, но они не отображаются в заказе (товар удалён из каталога или ошибка связи). Обновите страницу корзины и удалите проблемные товары.'
+                );
+            }
+            throw new Exception('Корзина пуста. Обновите страницу (F5). Если товары снова в корзине — повторите оформление.');
         }
         
         // Проверяем наличие товаров на складе
@@ -130,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Применяем промокод, если указан
         $promo_discount = 0;
+        $wheel_reward = null;
         if ($promo_code_id) {
             $stmt_promo = $pdo->prepare("
                 SELECT * FROM promo_codes 
@@ -182,8 +198,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $promo_code_id = null; // Промокод не найден
             }
         }
+
+        // Применяем скидку колеса фортуны (если указана)
+        if ($wheel_reward_id) {
+            $stmtReward = $pdo->prepare("
+                SELECT id, user_id, reward_type, target_id, target_name, discount_percent, promo_code, is_used, expires_at
+                FROM wheel_rewards
+                WHERE id = ? AND user_id = ?
+                LIMIT 1
+            ");
+            $stmtReward->execute([$wheel_reward_id, (int)$_SESSION['user_id']]);
+            $wheel_reward = $stmtReward->fetch(PDO::FETCH_ASSOC);
+
+            if ($wheel_reward && (int)$wheel_reward['is_used'] === 0) {
+                $now = new DateTime();
+                $expiresAt = new DateTime($wheel_reward['expires_at']);
+                if ($now <= $expiresAt) {
+                    $eligibleTotal = 0.0;
+                    $rewardType = (string)$wheel_reward['reward_type'];
+                    $targetId = (int)$wheel_reward['target_id'];
+
+                    foreach ($cart_items as $item) {
+                        $line = $item['price'] * $item['quantity'];
+
+                        if ($rewardType === 'product' && (int)$item['product_id'] === $targetId) {
+                            $eligibleTotal += $line;
+                        } elseif ($rewardType === 'brand' || $rewardType === 'category') {
+                            // Для brand/category нужно узнать принадлежность товара
+                            // (достанем одним запросом позже)
+                        }
+                    }
+
+                    if ($rewardType === 'brand' || $rewardType === 'category') {
+                        $productIds = array_map(static fn($it) => (int)$it['product_id'], $cart_items);
+                        $productIds = array_values(array_unique($productIds));
+                        if (!empty($productIds)) {
+                            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                            $stmtMeta = $pdo->prepare("
+                                SELECT id, brand_id, category_id
+                                FROM products
+                                WHERE id IN ($placeholders)
+                            ");
+                            $stmtMeta->execute($productIds);
+                            $meta = [];
+                            foreach ($stmtMeta->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                                $meta[(int)$row['id']] = $row;
+                            }
+
+                            foreach ($cart_items as $item) {
+                                $pid = (int)$item['product_id'];
+                                if (!isset($meta[$pid])) {
+                                    continue;
+                                }
+                                $line = $item['price'] * $item['quantity'];
+                                if ($rewardType === 'brand' && (int)$meta[$pid]['brand_id'] === $targetId) {
+                                    $eligibleTotal += $line;
+                                }
+                                if ($rewardType === 'category' && (int)$meta[$pid]['category_id'] === $targetId) {
+                                    $eligibleTotal += $line;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($eligibleTotal > 0) {
+                        $percent = max(1, min(90, (int)$wheel_reward['discount_percent']));
+                        $wheelDiscount = ($eligibleTotal * $percent) / 100;
+                        if ($wheelDiscount > ($subtotal - $promo_discount)) {
+                            $wheelDiscount = ($subtotal - $promo_discount);
+                        }
+                        $promo_discount += max(0, $wheelDiscount);
+
+                        // Помечаем промокод колеса использованным
+                        $stmtUseWheel = $pdo->prepare("UPDATE wheel_rewards SET is_used = 1 WHERE id = ? AND user_id = ? AND is_used = 0");
+                        $stmtUseWheel->execute([(int)$wheel_reward['id'], (int)$_SESSION['user_id']]);
+                    } else {
+                        $wheel_reward_id = null;
+                    }
+                } else {
+                    $wheel_reward_id = null;
+                }
+            } else {
+                $wheel_reward_id = null;
+            }
+        }
         
-        $total = $subtotal - $promo_discount;
+        $total = max(0, $subtotal - $promo_discount);
         
         // Рассчитываем дату доставки
         // Курьером: +2-3 дня, самовывоз: +1 день
@@ -322,19 +422,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ");
             $stmt_use->execute([$promo_code_id, $_SESSION['user_id'], $order_id]);
         }
+
+        // Бонус за покупку: +1 прокрутка, если сумма заказа от 1000 руб.
+        if ($total >= 1000) {
+            wheelAddSpins((int)$_SESSION['user_id'], 1, 'order_over_1000', (int)$order_id);
+        }
         
-        // Подтверждаем транзакцию
-        $pdo->commit();
-        
+        // Подтверждаем транзакцию (после DDL внутри запроса транзакция могла уже закрыться неявным COMMIT)
+        if ($pdo->inTransaction()) {
+            $pdo->commit();
+        }
+
         echo json_encode([
             'success' => true,
             'message' => 'Заказ успешно оформлен',
             'order_id' => $order_id
         ]);
         
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        echo json_encode(['success' => false, 'message' => 'Ошибка при создании заказа: ' . $e->getMessage()]);
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            try {
+                $pdo->rollBack();
+            } catch (Throwable $e2) {
+                error_log('create_order rollBack: ' . $e2->getMessage());
+            }
+        }
+        echo json_encode([
+            'success' => false,
+            'message' => 'Ошибка при создании заказа: ' . $e->getMessage(),
+        ], JSON_UNESCAPED_UNICODE);
     }
 } else {
     echo json_encode(['success' => false, 'message' => 'Неверный метод запроса']);

@@ -3,13 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?>Косметика</title>
+    <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?>Pinky Cosmetics</title>
     <!-- CSS разбито по модулям: базовые стили, layout, компоненты, страницы -->
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/base.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/layout.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/components.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/pages.css">
     <link rel="stylesheet" href="<?php echo ASSETS_URL; ?>css/style.css?v=<?php echo time(); ?>">
+    <script>
+    window.COSMETIC_BASE_URL = <?php echo json_encode(BASE_URL, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    /** Путь от каталога приложения (тот же хост, что у страницы). */
+    window.cosmeticAppPath = function (relativePath) {
+        var p = String(relativePath || '').replace(/^\//, '');
+        if (typeof window.COSMETIC_BASE_URL === 'string' && window.COSMETIC_BASE_URL) {
+            try {
+                var u = new URL(window.COSMETIC_BASE_URL);
+                var root = (u.pathname || '/').replace(/\/?$/, '/');
+                return root + p;
+            } catch (e) {}
+        }
+        return '/' + p;
+    };
+    </script>
     <script src="<?php echo ASSETS_URL; ?>js/favorites.js" defer></script>
     <script src="<?php echo ASSETS_URL; ?>js/cart.js" defer></script>
     <script src="<?php echo ASSETS_URL; ?>js/product.js" defer></script>
@@ -20,16 +35,15 @@
             <div class="container">
                 <div class="header-top-content">
                     <a href="<?php echo BASE_URL; ?>" class="logo">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                        </svg>
+                        <img src="<?php echo UPLOADS_URL; ?>Snimok_Ekrana_2026-05-14_123812.png" alt="Pinky Cosmetics" class="logo-mark" width="120" height="44" decoding="async">
+                        <span class="logo-wordmark">Pinky Cosmetics</span>
                     </a>
                     <nav class="nav-menu">
                         <a href="<?php echo BASE_URL; ?>catalog.php">каталог</a>
                         <a href="<?php echo BASE_URL; ?>brands.php">бренды</a>
-                        <a href="<?php echo BASE_URL; ?>">новинки</a>
-                        
+                        <a href="<?php echo BASE_URL; ?>guide.php">колесо</a>
                         <a href="<?php echo BASE_URL; ?>shops.php">магазины</a>
+                        <a href="<?php echo BASE_URL; ?>feedback.php">связь</a>
                     </nav>
                     <div class="header-icons">
                         <a href="<?php echo BASE_URL; ?>catalog.php" class="icon-link" title="Поиск">

@@ -5,10 +5,20 @@ require_once __DIR__ . '/../config/config.php';
 $category_slug = $_GET['category'] ?? null;
 $current_category = null;
 
+// Получаем текущий бренд
+$brand_slug = $_GET['brand'] ?? null;
+$current_brand = null;
+
 if ($category_slug) {
     $stmt = $pdo->prepare("SELECT * FROM categories WHERE slug = ?");
     $stmt->execute([$category_slug]);
     $current_category = $stmt->fetch();
+}
+
+if ($brand_slug) {
+    $stmt = $pdo->prepare("SELECT * FROM brands WHERE slug = ? LIMIT 1");
+    $stmt->execute([$brand_slug]);
+    $current_brand = $stmt->fetch();
 }
 
 // Получаем все корневые категории (не скрытые)
@@ -81,6 +91,11 @@ if ($current_category) {
     $params = $category_ids;
 }
 
+if ($current_brand) {
+    $where .= " AND p.brand_id = ?";
+    $params[] = (int)$current_brand['id'];
+}
+
 // Добавляем фильтр по цене
 if ($min_price !== null && $min_price >= 0) {
     $where .= " AND p.price >= ?";
@@ -125,7 +140,9 @@ $stmt_products = $pdo->prepare($sql);
 $stmt_products->execute($params);
 $products = $stmt_products->fetchAll();
 
-$page_title = $current_category ? $current_category['name'] : 'Каталог';
+$page_title = $current_category
+    ? $current_category['name']
+    : ($current_brand ? ('Бренд: ' . $current_brand['name']) : 'Каталог');
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -138,6 +155,7 @@ include __DIR__ . '/../includes/header.php';
                         <div class="catalog-nav-link-wrapper">
                             <a href="?category=<?php echo $root_cat['slug']; ?><?php 
                                 $query_params = [];
+                                if ($brand_slug) $query_params[] = 'brand=' . urlencode($brand_slug);
                                 if ($min_price !== null) $query_params[] = 'min_price=' . urlencode($min_price);
                                 if ($max_price !== null) $query_params[] = 'max_price=' . urlencode($max_price);
                                 if ($sort && $sort !== 'newest') $query_params[] = 'sort=' . urlencode($sort);
@@ -157,6 +175,7 @@ include __DIR__ . '/../includes/header.php';
                                     <li class="catalog-nav-subitem <?php echo ($current_category && $current_category['id'] == $child_cat['id']) ? 'active' : ''; ?>">
                                         <a href="?category=<?php echo $child_cat['slug']; ?><?php 
                                             $query_params = [];
+                                            if ($brand_slug) $query_params[] = 'brand=' . urlencode($brand_slug);
                                             if ($min_price !== null) $query_params[] = 'min_price=' . urlencode($min_price);
                                             if ($max_price !== null) $query_params[] = 'max_price=' . urlencode($max_price);
                                             if ($sort && $sort !== 'newest') $query_params[] = 'sort=' . urlencode($sort);
@@ -175,7 +194,14 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="catalog-content">
-        <h1><?php echo htmlspecialchars($page_title); ?></h1>
+        <div style="display:flex; align-items: center; justify-content: flex-start; gap: 12px; flex-wrap: wrap;">
+            <h1 style="margin: 0;"><?php echo htmlspecialchars($page_title); ?></h1>
+            <?php if ($current_brand): ?>
+                <a href="brands.php" class="btn btn-secondary" style="padding: 10px 14px; border-radius: 12px; font-size: 13px;">
+                    ← Все бренды
+                </a>
+            <?php endif; ?>
+        </div>
         
         <!-- Фильтр по цене и сортировка -->
         <div class="catalog-filters">
@@ -183,6 +209,9 @@ include __DIR__ . '/../includes/header.php';
                 <form method="GET" action="" class="price-filter-form">
                     <?php if ($category_slug): ?>
                         <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_slug); ?>">
+                    <?php endif; ?>
+                    <?php if ($brand_slug): ?>
+                        <input type="hidden" name="brand" value="<?php echo htmlspecialchars($brand_slug); ?>">
                     <?php endif; ?>
                     <?php if ($sort && $sort !== 'newest'): ?>
                         <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
@@ -218,6 +247,7 @@ include __DIR__ . '/../includes/header.php';
                                 <a href="?<?php 
                                     $reset_params = [];
                                     if ($category_slug) $reset_params[] = 'category=' . urlencode($category_slug);
+                                    if ($brand_slug) $reset_params[] = 'brand=' . urlencode($brand_slug);
                                     if ($sort && $sort !== 'newest') $reset_params[] = 'sort=' . urlencode($sort);
                                     echo !empty($reset_params) ? implode('&', $reset_params) : '';
                                 ?>" class="btn-filter-reset">Сбросить</a>
@@ -232,6 +262,9 @@ include __DIR__ . '/../includes/header.php';
                 <form method="GET" action="" class="sort-filter-form" id="sortForm">
                     <?php if ($category_slug): ?>
                         <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_slug); ?>">
+                    <?php endif; ?>
+                    <?php if ($brand_slug): ?>
+                        <input type="hidden" name="brand" value="<?php echo htmlspecialchars($brand_slug); ?>">
                     <?php endif; ?>
                     <?php if ($min_price !== null): ?>
                         <input type="hidden" name="min_price" value="<?php echo htmlspecialchars($min_price); ?>">

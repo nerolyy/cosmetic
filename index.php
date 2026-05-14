@@ -35,12 +35,14 @@ $pages = [
     'catalog' => 'catalog.php',
     'product' => 'product.php',
     'brands' => 'brands.php',
+    'guide' => 'guide.php',
     'shops' => 'shops.php',
     'cart' => 'cart.php',
     'profile' => 'profile.php',
     'login' => 'login.php',
     'register' => 'register.php',
     'logout' => 'logout.php',
+    'feedback' => 'feedback.php',
 ];
 
 // Проверяем, есть ли запрашиваемая страница

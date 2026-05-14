@@ -11,6 +11,13 @@ $success = '';
 $edit_id = null;
 $edit_product = null;
 
+if (isset($_GET['added'])) {
+    $success = 'Товар успешно добавлен';
+}
+if (isset($_GET['updated'])) {
+    $success = 'Товар успешно обновлен';
+}
+
 // Функция загрузки изображения
 function uploadImage($file, $upload_dir = '../uploads/') {
     if (!isset($file['error']) || is_array($file['error'])) {
@@ -67,7 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $stmt = $pdo->prepare("INSERT INTO products (name, slug, description, price, old_price, discount, image, category_id, brand_id, stock, is_new, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$name, $slug, $description, $price, $old_price, $discount, $image, $category_id, $brand_id, $stock, $is_new, $is_featured]);
-            $success = 'Товар успешно добавлен';
+            header('Location: products.php?added=1');
+            exit;
         } catch (PDOException $e) {
             $error = 'Ошибка: ' . $e->getMessage();
         }
@@ -114,7 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $stmt = $pdo->prepare("UPDATE products SET name = ?, slug = ?, description = ?, price = ?, old_price = ?, discount = ?, image = ?, category_id = ?, brand_id = ?, stock = ?, is_new = ?, is_featured = ? WHERE id = ?");
             $stmt->execute([$name, $slug, $description, $price, $old_price, $discount, $image, $category_id, $brand_id, $stock, $is_new, $is_featured, $id]);
-            $success = 'Товар успешно обновлен';
+            header('Location: products.php?updated=1');
+            exit;
         } catch (PDOException $e) {
             $error = 'Ошибка: ' . $e->getMessage();
         }

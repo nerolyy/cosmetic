@@ -36,6 +36,100 @@ if ($order_total <= 0) {
 }
 
 try {
+    // Колесо фортуны: промокоды вида WHEELxxxxxx
+    if (strpos($promo_code, 'WHEEL') === 0) {
+        wheelEnsureTables();
+
+        $stmtReward = $pdo->prepare("
+            SELECT id, user_id, reward_type, target_id, target_name, discount_percent, promo_code, is_used, expires_at
+            FROM wheel_rewards
+            WHERE promo_code = ? AND user_id = ?
+            LIMIT 1
+        ");
+        $stmtReward->execute([$promo_code, (int)$_SESSION['user_id']]);
+        $reward = $stmtReward->fetch(PDO::FETCH_ASSOC);
+
+        if (!$reward) {
+            echo json_encode(['success' => false, 'message' => 'Промокод не найден или не принадлежит вашему аккаунту']);
+            exit;
+        }
+
+        if ((int)$reward['is_used'] === 1) {
+            echo json_encode(['success' => false, 'message' => 'Промокод уже использован']);
+            exit;
+        }
+
+        $now = new DateTime();
+        $expiresAt = new DateTime($reward['expires_at']);
+        if ($now > $expiresAt) {
+            echo json_encode(['success' => false, 'message' => 'Промокод истек']);
+            exit;
+        }
+
+        // Считаем сумму товаров в корзине, на которые действует скидка
+        $eligibleTotal = 0.0;
+        $rewardType = (string)$reward['reward_type'];
+        $targetId = (int)$reward['target_id'];
+
+        if ($rewardType === 'product') {
+            $stmtEligible = $pdo->prepare("
+                SELECT SUM(p.price * c.quantity) AS s
+                FROM cart c
+                JOIN products p ON p.id = c.product_id
+                WHERE c.user_id = ? AND c.product_id = ?
+            ");
+            $stmtEligible->execute([(int)$_SESSION['user_id'], $targetId]);
+            $eligibleTotal = (float)($stmtEligible->fetchColumn() ?: 0);
+        } elseif ($rewardType === 'brand') {
+            $stmtEligible = $pdo->prepare("
+                SELECT SUM(p.price * c.quantity) AS s
+                FROM cart c
+                JOIN products p ON p.id = c.product_id
+                WHERE c.user_id = ? AND p.brand_id = ?
+            ");
+            $stmtEligible->execute([(int)$_SESSION['user_id'], $targetId]);
+            $eligibleTotal = (float)($stmtEligible->fetchColumn() ?: 0);
+        } elseif ($rewardType === 'category') {
+            $stmtEligible = $pdo->prepare("
+                SELECT SUM(p.price * c.quantity) AS s
+                FROM cart c
+                JOIN products p ON p.id = c.product_id
+                WHERE c.user_id = ? AND p.category_id = ?
+            ");
+            $stmtEligible->execute([(int)$_SESSION['user_id'], $targetId]);
+            $eligibleTotal = (float)($stmtEligible->fetchColumn() ?: 0);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Неверный тип скидки']);
+            exit;
+        }
+
+        if ($eligibleTotal <= 0) {
+            echo json_encode(['success' => false, 'message' => 'В корзине нет товаров, подходящих под этот промокод']);
+            exit;
+        }
+
+        $percent = max(1, min(90, (int)$reward['discount_percent']));
+        $discount = ($eligibleTotal * $percent) / 100;
+        if ($discount > $order_total) {
+            $discount = $order_total;
+        }
+        $final_total = $order_total - $discount;
+
+        echo json_encode([
+            'success' => true,
+            'promo_code' => $reward['promo_code'],
+            'promo_id' => (int)$reward['id'],
+            'promo_source' => 'wheel',
+            'description' => ($rewardType === 'brand' ? 'Скидка на бренд: ' : ($rewardType === 'category' ? 'Скидка на категорию: ' : 'Скидка на товар: ')) . $reward['target_name'],
+            'discount_type' => 'percentage',
+            'discount_value' => $percent,
+            'discount' => round($discount, 2),
+            'order_total' => round($order_total, 2),
+            'final_total' => round($final_total, 2)
+        ]);
+        exit;
+    }
+
     // Проверяем существование таблицы
     try {
         $stmt_check_table = $pdo->query("SHOW TABLES LIKE 'promo_codes'");
