@@ -990,10 +990,16 @@ img {
 
 /* Стили для промо-слайдов */
 .unified-slide[data-slide="1"],
-.unified-slide[data-slide="2"] {
+.unified-slide[data-slide="2"],
+.unified-slide[data-slide="3"] {
     background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #764ba2 100%);
     background-size: 200% 200%;
     animation: promo-gradient-shift 8s ease infinite;
+}
+
+/* Слайд обратной связи — чуть другой оттенок */
+.unified-slide[data-slide="3"] {
+    background: linear-gradient(135deg, #e91e63 0%, #9c27b0 45%, #673ab7 100%);
 }
 
 @keyframes promo-gradient-shift {
@@ -1979,6 +1985,19 @@ img {
 
 .brand-link:hover {
     color: var(--primary-color);
+}
+
+.brand-no-products {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.brand-item-empty .brand-link {
+    color: var(--text-light);
 }
 
 .brand-favorite-btn {

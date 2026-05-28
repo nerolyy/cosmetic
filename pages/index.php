@@ -130,7 +130,7 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
             
-            <!-- Слайд 3: Бьюти‑гид -->
+            <!-- Слайд 3: Колесо фортуны -->
             <div class="unified-slide" data-slide="2">
                 <div class="promo-slide-background">
                     <div class="promo-shapes">
@@ -142,17 +142,46 @@ include __DIR__ . '/../includes/header.php';
                 <div class="container">
                     <div class="promo-slide-content">
                         <div class="promo-text-top">
-                            <span class="promo-label">БЬЮТИ‑ГИД</span>
-                            <span class="promo-label-secondary">за 60 секунд</span>
+                            <span class="promo-label">КОЛЕСО ФОРТУНЫ</span>
+                            <span class="promo-label-secondary">персональные скидки</span>
                         </div>
                         <div class="promo-main-content">
-                            <h2 class="promo-title">Подбор ухода под вашу кожу</h2>
+                            <h2 class="promo-title">Крутите и выигрывайте скидки</h2>
                             <div class="promo-code-wrapper">
-                                <div class="promo-code-label">Быстро и понятно</div>
-                                <div class="promo-code-description">Тип кожи, задача — и готовая рутина с переходами в каталог</div>
+                                <div class="promo-code-label">На бренды, категории и товары</div>
+                                <div class="promo-code-description">+3 прокрутки за регистрацию и +1 за заказ от 1000 ₽</div>
                             </div>
                             <a href="guide.php" class="btn-promo-catalog">
-                                <span>ОТКРЫТЬ БЬЮТИ‑ГИД</span>
+                                <span>КРУТИТЬ КОЛЕСО</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Слайд 4: Обратная связь -->
+            <div class="unified-slide" data-slide="3">
+                <div class="promo-slide-background promo-slide-background-feedback">
+                    <div class="promo-shapes">
+                        <div class="promo-shape promo-shape-1"></div>
+                        <div class="promo-shape promo-shape-2"></div>
+                        <div class="promo-shape promo-shape-3"></div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="promo-slide-content">
+                        <div class="promo-text-top">
+                            <span class="promo-label">ОБРАТНАЯ СВЯЗЬ</span>
+                            <span class="promo-label-secondary">мы на связи</span>
+                        </div>
+                        <div class="promo-main-content">
+                            <h2 class="promo-title">Напишите нам — ответим на почту</h2>
+                            <div class="promo-code-wrapper">
+                                <div class="promo-code-label">Вопросы по заказу и ассортименту</div>
+                                <div class="promo-code-description">Отправьте сообщение через форму — на email придёт копия обращения</div>
+                            </div>
+                            <a href="feedback.php" class="btn-promo-catalog">
+                                <span>НАПИСАТЬ НАМ</span>
                             </a>
                         </div>
                     </div>
@@ -166,6 +195,7 @@ include __DIR__ . '/../includes/header.php';
             <button type="button" class="unified-indicator unified-indicator-active" data-slide="0" aria-label="Слайд 1"></button>
             <button type="button" class="unified-indicator" data-slide="1" aria-label="Слайд 2"></button>
             <button type="button" class="unified-indicator" data-slide="2" aria-label="Слайд 3"></button>
+            <button type="button" class="unified-indicator" data-slide="3" aria-label="Слайд 4"></button>
         </div>
         
         <!-- Стрелки навигации -->
@@ -356,6 +386,43 @@ include __DIR__ . '/../includes/header.php';
                     </a>
                 <?php endforeach; ?>
             <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<!-- Секция: витрина обратной связи -->
+<section class="products-section products-section-feedback" data-section="feedback">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-title-wrapper">
+                <h2 class="section-title">
+                    <span class="title-text">ОБРАТНАЯ СВЯЗЬ</span>
+                    <span class="title-underline"></span>
+                </h2>
+                <p class="section-subtitle">Задайте вопрос по заказу, доставке или ассортименту — мы ответим на указанный email</p>
+            </div>
+            <div class="section-nav">
+                <a class="btn btn-cta" href="feedback.php" style="padding: 12px 18px; border-radius: 10px; font-size: 13px;">
+                    <span>НАПИСАТЬ НАМ</span>
+                </a>
+            </div>
+        </div>
+        <div class="guide-teaser-grid feedback-teaser-grid">
+            <div class="guide-teaser-card feedback-teaser-card">
+                <div class="guide-teaser-kicker">Форма</div>
+                <div class="guide-teaser-title">Имя, тема и текст</div>
+                <div class="guide-teaser-text">Короткая форма на сайте: укажите контакты и опишите вопрос — сообщение сохраняется в системе.</div>
+            </div>
+            <div class="guide-teaser-card feedback-teaser-card">
+                <div class="guide-teaser-kicker">Почта</div>
+                <div class="guide-teaser-title">Копия на ваш email</div>
+                <div class="guide-teaser-text">После отправки вы получите письмо с текстом обращения — удобно хранить переписку у себя.</div>
+            </div>
+            <div class="guide-teaser-card feedback-teaser-card">
+                <div class="guide-teaser-kicker">Ответ</div>
+                <div class="guide-teaser-title">Связь с поддержкой</div>
+                <div class="guide-teaser-text">Администратор видит обращения в панели и может ответить вам по почте. Защита от спама — reCAPTCHA.</div>
+            </div>
         </div>
     </div>
 </section>

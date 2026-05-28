@@ -762,7 +762,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             
             // Очищаем ошибки
-            document.querySelectorAll('.error-message').forEach(el => {
+            document.querySelectorAll('.field-error').forEach(el => {
                 el.textContent = '';
             });
             

@@ -98,7 +98,7 @@ include __DIR__ . '/../includes/header.php';
                                 <input type="text" id="address" name="address" class="form-input" 
                                        placeholder="Улица, дом, квартира">
                             <?php endif; ?>
-                            <span class="error-message" id="address-error"></span>
+                            <span class="field-error" id="address-error" role="alert"></span>
                         </div>
                         
                         <!-- Выбор магазина для самовывоза -->
@@ -112,7 +112,7 @@ include __DIR__ . '/../includes/header.php';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <span class="error-message" id="shop-error"></span>
+                            <span class="field-error" id="shop-error" role="alert"></span>
                         </div>
                     </div>
                 </div>
@@ -132,7 +132,7 @@ include __DIR__ . '/../includes/header.php';
                             <label class="form-label" for="recipient-name">имя</label>
                             <input type="text" id="recipient-name" name="recipient_name" class="form-input" 
                                    value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" required>
-                            <span class="error-message" id="name-error"></span>
+                            <span class="field-error" id="name-error" role="alert"></span>
                         </div>
                         
                         <div class="form-group">
@@ -140,7 +140,7 @@ include __DIR__ . '/../includes/header.php';
                             <input type="tel" id="recipient-phone" name="recipient_phone" class="form-input" 
                                    value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" 
                                    placeholder="+7 (999) 123-45-67" required>
-                            <span class="error-message" id="phone-error"></span>
+                            <span class="field-error" id="phone-error" role="alert"></span>
                         </div>
                     </div>
                 </div>
